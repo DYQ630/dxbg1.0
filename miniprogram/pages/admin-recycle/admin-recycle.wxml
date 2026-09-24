@@ -1,0 +1,218 @@
+<!-- ============================================================
+     pages/admin-recycle/admin-recycle.wxml - 回收池管理页
+     ============================================================
+     【页面功能】
+       管理已回收的手机号码（超窗回收/手动删除/取消收藏），
+       支持按员工/标签/使用次数三维筛选，恢复到号码池或永久删除。
+
+     【回收池号码来源】
+       1. 超窗回收：邀约员持有号码超过规定时间未使用，自动流回回收池
+       2. 手动删除：管理员主动从号码池删除的号码
+       3. 取消收藏：邀约员取消收藏后，号码回到回收池
+
+     【两栏布局说明】
+       - 左侧竖排员工列表：点击筛选该员工相关的回收号码
+       - 右侧主区：号码卡片列表 + 单条操作按钮（恢复/删除）
+
+     【单条操作按钮】
+       - 恢复（绿色）：将号码退回号码池，可重新被领取
+       - 删除（红色）：永久删除，不可恢复，需二次确认
+
+     【批量操作（多选模式）】
+       - 点击右上角「多选」进入批量模式
+       - 可全选，底部出现批量恢复/批量删除按钮
+       - 批量删除同样需要二次确认，且不可逆
+     ============================================================ -->
+<view class="page">
+  <!-- 顶部导航（独立类名，避开 app.wxss 的 .header-bar 全局 hero 样式） -->
+  <view class="recycle-header">
+    <view class="rh-left">
+      <text class="rh-title">回收池</text>
+      <text class="rh-sub">{{recycleStats.total || 0}} 个号码</text>
+    </view>
+    <view class="rh-right">
+      <text class="edit-btn" bindtap="toggleBatchMode">{{batchMode ? '取消' : '多选'}}</text>
+    </view>
+  </view>
+
+  <!-- 顶部统计条（与 admin-pool 风格一致） -->
+  <view class="stats-row">
+    <view class="stat-item">
+      <view class="s-num">{{recycleStats.total || 0}}</view>
+      <view class="s-lbl">总回收</view>
+    </view>
+    <view class="stat-divider"></view>
+    <view class="stat-item">
+      <view class="s-num red">{{recycleStats.today || 0}}</view>
+      <view class="s-lbl">今日</view>
+    </view>
+    <view class="stat-divider"></view>
+    <view class="stat-item">
+      <view class="s-num orange">{{recycleStats.this_week || 0}}</view>
+      <view class="s-lbl">本周</view>
+    </view>
+    <view class="stat-divider"></view>
+    <view class="stat-item">
+      <view class="s-num blue">{{recycleStats.this_month || 0}}</view>
+      <view class="s-lbl">本月</view>
+    </view>
+  </view>
+
+  <!-- 全宽筛选带：标签 + 使用次数，横向铺满，不被左侧栏遮挡
+       - 标签筛选：可多选标签，OR 逻辑（号码含任一所选标签即显示）
+       - 使用次数档位：互斥单选，选中后列表只显示对应拨打次数区间的号码 -->
+
+  <view class="filter-band">
+    <scroll-view scroll-x class="tag-filter">
+      <view class="tag-row">
+        <view
+          class="tag-chip {{selectedTags.length === 0 ? 'active' : ''}}"
+          bindtap="onTagChipTap"
+          data-tag=""
+        >全部</view>
+        <view
+          wx:for="{{tags}}"
+          wx:key="tag_id"
+          class="tag-chip {{item._selected ? 'active' : ''}}"
+          style="{{item._activeStyle}}"
+          bindtap="onTagChipTap"
+          data-tag="{{item.tag_id}}"
+        >
+          {{item.name}}
+          <text class="tcnt">{{item.usage_count}}</text>
+        </view>
+      </view>
+    </scroll-view>
+
+    <scroll-view scroll-x class="usage-filter">
+      <view class="uf-row">
+        <text class="uf-label">次数</text>
+        <view
+          wx:for="{{usageBuckets}}"
+          wx:key="key"
+          class="uf-chip {{(item.key && selectedBucket === item.key) || (!item.key && !selectedBucket) ? 'active' : ''}}"
+          bindtap="onUsageChipTap"
+          data-bucket="{{item.key}}"
+        >
+          {{item.label}}
+          <text class="ufcnt" wx:if="{{item.countLabel}}">{{item.countLabel}}</text>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 两栏主体 -->
+  <view class="body-row">
+    <!-- 左侧员工竖排列表 -->
+    <scroll-view scroll-y class="emp-sidebar">
+      <!-- 全部 -->
+      <view
+        class="emp-item {{activeAssigneeId === 'all' || !activeAssigneeId ? 'active' : ''}}"
+        bindtap="onAssigneeSelect"
+        data-id=""
+      >
+        <view class="emp-name">全部</view>
+        <view class="emp-badge">{{assigneesTotal || 0}}</view>
+      </view>
+      <!-- 员工列表 -->
+      <view
+        wx:for="{{assignees}}"
+        wx:key="user_id"
+        class="emp-item {{activeAssigneeId === item.user_id ? 'active' : ''}}"
+        bindtap="onAssigneeSelect"
+        data-id="{{item.user_id}}"
+      >
+        <view class="emp-name">{{item.real_name}}</view>
+        <view class="emp-badge">{{item.count || 0}}</view>
+      </view>
+    </scroll-view>
+
+    <!-- 右侧主区 -->
+    <view class="main-area">
+      <!-- 主区内容（标签/次数筛选已上移到全宽筛选带） -->
+      <scroll-view
+        scroll-y
+        class="main-scroll {{batchMode && numbers.length > 0 ? 'with-batch' : ''}}"
+        enable-back-to-top
+        bindscrolltolower="onLoadMore"
+      >
+        <!-- 加载中 -->
+        <view wx:if="{{loadingNumbers}}" class="loading-state">
+          <text>加载中...</text>
+        </view>
+
+        <!-- 空状态 -->
+        <view wx:elif="{{!numbers.length}}" class="empty-state">
+          <image class="empty-img" src="/images/empty-state.png" mode="aspectFit" />
+          <view class="empty-text">暂无数据</view>
+        </view>
+
+        <!-- 号码列表 -->
+        <view wx:else>
+          <view wx:for="{{numbers}}" wx:key="id" class="num-card {{batchMode ? 'batch-mode' : ''}}" bindtap="onCardTap" data-id="{{item.id}}" data-index="{{index}}">
+            <!-- checkbox（编辑模式） -->
+            <view wx:if="{{batchMode}}" class="card-check">
+              <view class="ckbox {{selectedMap[item.id] ? 'checked' : ''}}">
+                {{selectedMap[item.id] ? '✓' : ''}}
+              </view>
+            </view>
+
+            <!-- 主体 -->
+            <view class="card-body">
+              <view class="phone-row">
+                <text class="phone-num">{{item._revealed ? item.number : item._masked}}</text>
+              </view>
+              <view class="card-meta">
+                <text class="meta-pill">{{item.carrier || '未知'}}{{item.region ? '·' + item.region : ''}}</text>
+                <text class="meta-pill agent" wx:if="{{item.assigned_to_name}}">{{item.assigned_to_name}}</text>
+              </view>
+              <view class="tag-chips" wx:if="{{item.tags && item.tags.length}}">
+                <text
+                  wx:for="{{item.tags}}"
+                  wx:for-item="tag"
+                  wx:key="tag_id"
+                  class="num-tag"
+                  style="background:#{{tag.color}}20;color:#{{tag.color}}"
+                >{{tag.name}}</text>
+              </view>
+              <view class="del-time" wx:if="{{item.deleted_at}}">{{item.deleted_at}}</view>
+            </view>
+
+            <!-- 单条操作 -->
+            <view wx:if="{{!batchMode}}" class="card-ops">
+              <view class="op-btn restore" bindtap="onRestore" data-id="{{item.id}}">恢复</view>
+              <view class="op-btn danger" bindtap="onDeletePermanent" data-id="{{item.id}}">删除</view>
+            </view>
+          </view>
+
+          <!-- 加载更多 -->
+          <view wx:if="{{hasMore}}" class="load-more">
+            <text>上滑加载更多</text>
+          </view>
+          <view wx:elif="{{!loadingNumbers && numbers.length}}" class="load-more">
+            <text class="no-more">— 已加载全部 —</text>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+
+  <!-- 底部批量操作栏（编辑模式） -->
+  <view wx:if="{{batchMode && numbers.length > 0}}" class="batch-bar">
+    <view class="batch-left">
+      <view class="batch-all" bindtap="toggleSelectAll">
+        <view class="ckbox {{allSelected ? 'checked' : ''}}">{{allSelected ? '✓' : ''}}</view>
+        <text>全选</text>
+      </view>
+      <text class="batch-count">已选 {{selectedCount}} 个</text>
+    </view>
+    <view class="batch-btns">
+      <view class="batch-btn restore" bindtap="onRestoreBatch" hover-class="btn-hover">
+        <image class="inl-ico" src="/images/icon-refresh.png" mode="aspectFit" />恢复
+      </view>
+      <view class="batch-btn del" bindtap="onDeletePermanentBatch" hover-class="btn-hover">
+        <image class="inl-ico" src="/images/icon-trash.png" mode="aspectFit" />删除
+      </view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,354 @@
+/* ============================================================
+   管理员 · 员工管理（完整样式）
+   依赖 app.wxss 的设计变量：--primary / --secondary / --text / --text-sub 等
+   ============================================================ */
+
+.page {
+  min-height: 100vh;
+  padding: 24rpx 32rpx 160rpx;
+  background: var(--bg);
+  box-sizing: border-box;
+}
+
+/* ---------- 顶栏 hero ---------- */
+.hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--gradient);
+  padding: 44rpx 36rpx;
+  margin-bottom: 28rpx;
+  border-radius: 28rpx;
+  box-shadow: 0 12rpx 32rpx rgba(155, 126, 222, 0.22);
+}
+.hero-title {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 1rpx;
+}
+.hero-sub {
+  font-size: 26rpx;
+  color: rgba(255, 255, 255, 0.88);
+  background: rgba(255, 255, 255, 0.18);
+  padding: 8rpx 22rpx;
+  border-radius: 28rpx;
+}
+
+/* ---------- 新建员工按钮 ---------- */
+.add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 88rpx;
+  border-radius: 44rpx;
+  background: #fff;
+  color: var(--primary);
+  font-size: 30rpx;
+  font-weight: 600;
+  border: 2rpx solid #FFC2D7;
+  box-shadow: 0 8rpx 20rpx rgba(255, 107, 157, 0.12);
+  margin-bottom: 28rpx;
+}
+.add-btn:active {
+  opacity: 0.85;
+  transform: scale(0.98);
+}
+
+/* ---------- 加载 / 空状态 ---------- */
+.loading {
+  text-align: center;
+  padding: 80rpx 0;
+  color: var(--text-sub);
+  font-size: 28rpx;
+}
+.empty {
+  text-align: center;
+  padding: 100rpx 40rpx;
+  color: var(--text-sub);
+}
+.empty-icon {
+  font-size: 96rpx;
+  opacity: 0.4;
+  margin-bottom: 20rpx;
+}
+.empty-text {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: var(--text);
+}
+.empty-hint {
+  font-size: 24rpx;
+  margin-top: 12rpx;
+  opacity: 0.85;
+}
+
+/* ---------- 员工列表卡片 ---------- */
+.user-list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 左滑删除包装：卡片背后藏一个删除按钮，整体可滑动 */
+.swipe-wrap {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  margin-bottom: 18rpx;
+  border-radius: 20rpx;
+}
+.swipe-content {
+  /* 关键：swipe-content 必须填满 swipe-wrap（width:100%）+ 有白色背景（遮住 swipe-action） */
+  position: relative;
+  width: 100%;
+  z-index: 2;
+  background: #fff;
+}
+.swipe-action {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 160rpx;
+  background: linear-gradient(135deg, #F56C6C 0%, #FF9A9A 100%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+  font-weight: 600;
+  letter-spacing: 1rpx;
+  /* z-index: 1 低于 swipe-content（2），平时不可见，滑动被裁剪后才可见 */
+  z-index: 1;
+}
+.swipe-action:active {
+  opacity: 0.85;
+}
+.user-card {
+  display: flex;
+  align-items: flex-start;
+  padding: 24rpx;
+  background: #fff;
+  border-radius: 20rpx;
+  box-shadow: 0 4rpx 18rpx rgba(255, 107, 157, 0.08);
+  /* transform 在 swipe-content 上（不是 user-card） */
+}
+.user-avatar {
+  width: 84rpx;
+  height: 84rpx;
+  border-radius: 50%;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34rpx;
+  font-weight: 600;
+  flex-shrink: 0;
+  margin-right: 20rpx;
+}
+.user-info {
+  flex: 1;
+  min-width: 0;
+}
+.user-name {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: var(--text);
+}
+.user-account {
+  font-size: 22rpx;
+  color: var(--text-sub);
+  margin-top: 6rpx;
+}
+.user-rules {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+  margin-top: 14rpx;
+}
+.rchip {
+  font-size: 20rpx;
+  color: var(--secondary);
+  background: #F3EEFF;
+  border-radius: 16rpx;
+  padding: 6rpx 14rpx;
+  line-height: 1.2;
+}
+.user-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12rpx;
+  flex-shrink: 0;
+  margin-left: 12rpx;
+}
+.status.off {
+  font-size: 20rpx;
+  color: #fff;
+  background: #B5B0C5;
+  border-radius: 14rpx;
+  padding: 4rpx 14rpx;
+  line-height: 1.4;
+}
+.act-btn {
+  font-size: 24rpx;
+  color: var(--primary);
+  background: #FFF0F5;
+  border: 2rpx solid #FFD0E0;
+  border-radius: 24rpx;
+  padding: 8rpx 22rpx;
+  line-height: 1.3;
+}
+.act-btn:active {
+  opacity: 0.8;
+}
+.act-btn.danger {
+  color: var(--danger);
+  background: #FDEDED;
+  border-color: #FACACA;
+}
+
+/* ---------- 弹窗 ---------- */
+.modal-mask {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 0 32rpx;
+}
+.modal {
+  width: 100%;
+  max-width: 640rpx;
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 40rpx 32rpx 48rpx;
+  box-shadow: 0 12rpx 48rpx rgba(0, 0, 0, 0.18);
+  max-height: 82vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+.modal-title {
+  font-size: 34rpx;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 28rpx;
+  color: var(--text);
+}
+
+/* ---------- 表单 ---------- */
+.form-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 22rpx;
+}
+.form-label {
+  width: 170rpx;
+  font-size: 26rpx;
+  color: var(--text-sub);
+  flex-shrink: 0;
+}
+.form-label .hint {
+  display: block;
+  font-size: 20rpx;
+  color: #B5B0C5;
+  margin-top: 4rpx;
+}
+.form-input {
+  flex: 1;
+  min-width: 0;
+  background: #F5F5F7;
+  border-radius: 12rpx;
+  padding: 16rpx 20rpx;
+  font-size: 28rpx;
+  color: var(--text);
+  box-sizing: border-box;
+}
+.rule-tip {
+  font-size: 22rpx;
+  color: var(--text-sub);
+  text-align: center;
+  margin: -8rpx 0 20rpx;
+}
+
+/* ---------- 角色选择 ---------- */
+.role-pick {
+  display: flex;
+  gap: 16rpx;
+  flex: 1;
+}
+.rp {
+  flex: 1;
+  text-align: center;
+  padding: 16rpx 0;
+  font-size: 26rpx;
+  color: var(--text-sub);
+  background: #F5F5F7;
+  border-radius: 12rpx;
+  border: 2rpx solid transparent;
+}
+.rp.active {
+  color: var(--primary);
+  background: #FFF0F5;
+  border-color: var(--primary);
+  font-weight: 600;
+}
+
+/* ---------- 按钮 ---------- */
+.btn-row {
+  display: flex;
+  gap: 20rpx;
+  margin-top: 32rpx;
+}
+.btn {
+  flex: 1;
+  text-align: center;
+  height: 84rpx;
+  line-height: 84rpx;
+  border-radius: 42rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+}
+.btn-primary {
+  color: #fff;
+  background: var(--gradient);
+  box-shadow: 0 8rpx 20rpx rgba(255, 107, 157, 0.25);
+}
+.btn-secondary {
+  color: var(--primary);
+  background: #fff;
+  border: 2rpx solid #FFC2D7;
+}
+.btn:active {
+  opacity: 0.88;
+  transform: scale(0.98);
+}
+
+/* ---------- 加载更多 ---------- */
+.load-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 88rpx;
+  margin: 12rpx 0 24rpx;
+  border-radius: 44rpx;
+  background: #fff;
+  color: var(--primary);
+  font-size: 28rpx;
+  font-weight: 600;
+  border: 2rpx solid #FFC2D7;
+  box-shadow: 0 8rpx 20rpx rgba(255, 107, 157, 0.10);
+}
+.load-more:active {
+  opacity: 0.85;
+  transform: scale(0.98);
+}
+.load-more-end {
+  text-align: center;
+  padding: 32rpx 0;
+  font-size: 24rpx;
+  color: var(--text-sub);
+  opacity: 0.7;
+}

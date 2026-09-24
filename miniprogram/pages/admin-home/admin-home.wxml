@@ -1,0 +1,127 @@
+<!-- pages/admin-home/admin-home.wxml -->
+<!-- 管理员首页：今日数据概览、号码池状态、员工排名、快捷入口 -->
+<view class="page">
+  <!-- 顶部 hero（管理员您好 + 日期 + 今日已用/总上限） -->
+  <view class="hero-banner">
+    <view class="hero-left">
+      <view class="hero-greeting">管理员您好</view>
+      <view class="hero-date">{{todayStr}}</view>
+    </view>
+    <view class="hero-right">
+      <view class="hero-used-num">{{stats.overview.total_used || 0}}</view>
+      <view class="hero-used-label">{{range === 'today' ? '今日已用' : '本周已用'}} / 总上限 {{dailyLimitTotal}}</view>
+    </view>
+  </view>
+
+  <!-- 加载失败 -->
+  <view wx:if="{{loadError}}" class="error-card">
+    <image class="error-icon-img" src="/images/icon-warning.png" mode="aspectFit" />
+    <view class="error-text">数据加载失败</view>
+    <view class="error-btn" bindtap="loadData">点击重试</view>
+  </view>
+
+  <!-- 4 统计卡（保留） -->
+  <view wx:if="{{!loadError}}" class="stat-row">
+    <view class="stat-card">
+      <view class="stat-num">{{stats.overview.total_used || 0}}</view>
+      <view class="stat-label">总使用</view>
+    </view>
+    <view class="stat-card">
+      <view class="stat-num green">{{stats.overview.connected || 0}}</view>
+      <view class="stat-label">已接通</view>
+    </view>
+    <view class="stat-card">
+      <view class="stat-num red">{{stats.overview.unconnected || 0}}</view>
+      <view class="stat-label">未接通</view>
+    </view>
+    <view class="stat-card">
+      <view class="stat-num blue">{{stats.overview.wechat_added || 0}}</view>
+      <view class="stat-label">已加微信</view>
+    </view>
+  </view>
+
+  <!-- 号码池状态条（保留） -->
+  <view wx:if="{{pool}}" class="pool-bar">
+    <view class="pool-dot"></view>
+    <text class="pool-text">号码池剩余 {{pool.pool_remaining || 0}} 个</text>
+    <text class="pool-total">/ 共 {{pool.total || 0}}</text>
+  </view>
+
+  <!-- 【入口卡片 2×2 网格】号码池/回收池/规则/标签，全部可点击 -->
+  <view wx:if="{{!loadError}}" class="entry-cards">
+    <view class="entry-card" bindtap="goPool" hover-class="entry-card-hover">
+      <image class="entry-icon-img" src="/images/badge-pool.png" mode="aspectFit" />
+      <view class="entry-title">号码池</view>
+      <view class="entry-sub">{{pool ? (pool.pool_remaining + ' 个剩余') : '加载中…'}}</view>
+    </view>
+    <view class="entry-card" bindtap="goRecycle" hover-class="entry-card-hover">
+      <image class="entry-icon-img" src="/images/badge-recycle.png" mode="aspectFit" />
+      <view class="entry-title">回收池</view>
+      <view class="entry-sub">待领取线索</view>
+    </view>
+    <view class="entry-card" bindtap="goRules" hover-class="entry-card-hover">
+      <image class="entry-icon-img" src="/images/badge-rules.png" mode="aspectFit" />
+      <view class="entry-title">规则配置</view>
+      <view class="entry-sub">全局+个人</view>
+    </view>
+    <view class="entry-card" bindtap="goTags" hover-class="entry-card-hover">
+      <image class="entry-icon-img" src="/images/badge-tags.png" mode="aspectFit" />
+      <view class="entry-title">标签管理</view>
+      <view class="entry-sub">{{tagCount || '加载中…'}} 个</view>
+    </view>
+  </view>
+
+  <!-- 【保留】员工统计区 -->
+  <view wx:if="{{!loadError}}" class="card section">
+    <view class="section-header">
+      <view class="section-title"><image class="ti" src="/images/icon-users.png" mode="aspectFit" />员工{{range === 'today' ? '今日' : '本周'}}数据</view>
+      <view class="range-tabs">
+        <view class="rt {{range === 'today' ? 'active' : ''}}" bindtap="onRangeChange" data-range="today">今日</view>
+        <view class="rt {{range === 'week' ? 'active' : ''}}" bindtap="onRangeChange" data-range="week">本周</view>
+      </view>
+    </view>
+    <view class="sort-row">
+      <picker mode="selector" range="{{sortOptions}}" range-key="label" bindchange="onSortChange">
+        <view class="sort-pill">排序：{{currentSortLabel}} ▼</view>
+      </picker>
+    </view>
+
+    <view wx:if="{{!employees.length && !loading}}" class="empty-mini">{{range === 'today' ? '今日' : '本周'}}暂无员工使用记录</view>
+
+    <!-- 员工卡片 grid：一行两个，仅显示 拨打/加微/到店，整卡可点击 -->
+    <view class="emp-grid">
+      <view wx:for="{{employees}}" wx:key="user_id" class="emp-card" bindtap="onEmpTap" data-userid="{{item.user_id}}" hover-class="emp-card-hover">
+        <view class="emp-avatar" style="background: {{item.bgColor}}">{{item.initial}}</view>
+        <view class="emp-name">{{item.real_name}}</view>
+        <view class="emp-metrics">
+          <view class="metric">
+            <view class="metric-value-tag tag-dial">
+              <text class="mvt-num">{{item.total_used}}</text>
+              <text class="mvt-unit">次</text>
+            </view>
+            <view class="metric-label-tag tag-dial">拨打</view>
+          </view>
+          <view class="metric">
+            <view class="metric-value-tag tag-wechat">
+              <text class="mvt-num">{{item.wechat_added}}</text>
+              <text class="mvt-unit">人</text>
+            </view>
+            <view class="metric-label-tag tag-wechat">加微</view>
+          </view>
+          <view class="metric">
+            <view class="metric-value-tag tag-meeting">
+              <text class="mvt-num">{{item.meeting_scheduled || 0}}</text>
+              <text class="mvt-unit">人</text>
+            </view>
+            <view class="metric-label-tag tag-meeting">到店</view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 加载中 -->
+  <view wx:if="{{loading}}" class="loading-row">
+    <text>加载中...</text>
+  </view>
+</view>

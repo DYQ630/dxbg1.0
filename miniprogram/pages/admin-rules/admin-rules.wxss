@@ -1,0 +1,111 @@
+/* ============================================================
+   规则设置页样式
+
+   📏 可调参数（在 page 节点下调整，作用于本页所有 .form-input）
+   --input-padding-y: 数字距输入框上、下边框的距离（垂直呼吸空间）
+   --input-padding-x: 数字距输入框左、右边框的距离（水平呼吸空间）
+   --input-min-height: 输入框最小高度（控制输入框整体高度）
+   ============================================================ */
+page {
+  --input-padding-y: 22rpx;
+  --input-padding-x: 28rpx;
+  --input-min-height: 80rpx;
+}
+.page { padding-bottom: 40rpx; }
+
+.header-banner {
+  background: linear-gradient(135deg, #FF6B9D, #FF8FB1);
+  color: #fff;
+  padding: 36rpx 32rpx 32rpx;
+}
+.header-banner .title { font-size: 36rpx; font-weight: 700; }
+.header-banner .subtitle { font-size: 24rpx; opacity: 0.85; margin-top: 8rpx; }
+
+.card { background: #fff; margin: 20rpx 24rpx; border-radius: 16rpx; padding: 36rpx 28rpx 36rpx; }
+.section-title { font-size: 30rpx; font-weight: 600; color: #303133; }
+.section-desc { font-size: 22rpx; color: #909399; margin: 8rpx 0 28rpx; }
+
+.form-row {
+  display: flex;               /* 横向布局：label 左 + input 右 */
+  align-items: center;         /* 垂直居中 */
+  margin-bottom: 24rpx;        /* 拉大行间距让 card 增高 */
+  min-height: 80rpx;           /* 给每行一个最小高度，输入框能足够高 */
+}
+/*每日分配号码上限等文字设置*/
+.form-label {  
+  font-size: 29rpx;
+  color: #606266;
+  width: 230rpx;               /* 略缩小 label 宽度，让 input 更宽 */
+  margin-right: 16rpx;
+  white-space: nowrap;         /* 防止 label 换行 */
+  line-height: 1.4;
+  flex-shrink: 0;              /* 不可压缩，避免 label 裁字 */
+  display: block;
+}
+/*输入框调整*/
+.form-input {
+  flex: 1;                     /* input 占 label 以外的剩余空间 */
+  background: #F5F7FA;
+  padding: var(--input-padding-y) var(--input-padding-x);  /* 上下 / 左右，由 page 变量控制 */
+  min-height: var(--input-min-height);                     /* 输入框最小高度 */
+  border-radius: 12rpx;
+  font-size: 35rpx;
+  font-weight: 600;            /* 加粗让数字更醒目 */
+  color: #303133;              /* 明确深色，避免默认颜色看不清 */
+  box-sizing: border-box;
+  text-align: right;           /* 数字右对齐，个位对齐不乱跳 */
+  display: block;
+}
+.form-input[disabled] { opacity: 0.5; }
+
+.btn-save {
+  margin-top: 16rpx;
+  background: linear-gradient(135deg, #FF6B9D, #FF8FB1);
+  color: #fff;
+  padding: 24rpx 0;
+  border-radius: 12rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+  text-align: center;
+}
+.btn-save[disabled] { opacity: 0.6; }
+
+/* 员工搜索框 */
+.agent-search-wrap {
+  display: flex; align-items: center;
+  margin: 12rpx 0 18rpx;
+  padding: 10rpx 16rpx;
+  background: #F5F7FA;
+  border-radius: 32rpx;
+}
+.asi-ico { width: 28rpx; height: 28rpx; margin-right: 12rpx; opacity: 0.6; }
+.agent-search-input {
+  flex: 1; font-size: 26rpx; color: #303133; min-width: 0;
+}
+.clear-btn {
+  width: 36rpx; height: 36rpx; line-height: 32rpx;
+  text-align: center; color: #909399; font-size: 32rpx;
+}
+
+.agent-row {
+  display: flex;
+  align-items: center;
+  padding: 18rpx 0;
+  border-bottom: 1rpx solid #F5F5F5;
+}
+.agent-row:last-child { border-bottom: none; }
+.agent-avatar {
+  width: 72rpx; height: 72rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #5B8FF9, #8FB6FF);
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28rpx; font-weight: 600;
+  margin-right: 20rpx;
+}
+.agent-info { flex: 1; min-width: 0; }
+.agent-name { font-size: 28rpx; color: #303133; font-weight: 500; }
+.agent-meta { font-size: 22rpx; color: #909399; margin-top: 6rpx; }
+.agent-arrow { color: #C0C4CC; font-size: 36rpx; margin-left: 12rpx; }
+
+.empty { text-align: center; color: #909399; padding: 60rpx 0; font-size: 26rpx; }

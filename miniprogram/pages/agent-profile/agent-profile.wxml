@@ -1,0 +1,106 @@
+<!-- pages/agent-profile/agent-profile.wxml -->
+<!-- 邀约员 · 个人资料页：用户信息卡、编辑姓名/手机号、修改密码、退出登录 -->
+<view class="page">
+  <!-- 顶部粉色渐变用户卡 -->
+  <view class="profile-card">
+    <view class="avatar">{{avatarChar}}</view>
+    <view class="p-info">
+      <view class="p-name">{{userInfo.real_name || userInfo.username || '未设置姓名'}}</view>
+      <view class="p-sub">账号：{{userInfo.username}}</view>
+    </view>
+    <view class="role-badge">{{userInfo.role === 'admin' ? '管理员' : '邀约员'}}</view>
+  </view>
+
+  <!-- 个人信息 -->
+  <view class="card">
+    <view class="card-title">个人信息</view>
+    <view class="list-item" bindtap="onEditName">
+      <view>
+        <view class="name">姓名</view>
+        <view class="desc">{{userInfo.real_name || '未设置'}}</view>
+      </view>
+      <view class="arrow">›</view>
+    </view>
+    <view class="list-item" bindtap="onEditName">
+      <view>
+        <view class="name">手机号</view>
+        <view class="desc">{{userInfo.phone || '未设置'}}</view>
+      </view>
+      <view class="arrow">›</view>
+    </view>
+  </view>
+
+  <!-- 功能项 -->
+  <view class="card">
+    <view class="list-item" bindtap="onChangePassword">
+      <view class="name"><image class="inl-ico" src="/images/icon-lock.png" mode="aspectFit" />修改密码</view>
+      <view class="arrow">›</view>
+    </view>
+    <view class="list-item" bindtap="doLogout">
+      <view class="name logout"><image class="inl-ico" src="/images/icon-logout.png" mode="aspectFit" />退出登录</view>
+      <view class="arrow">›</view>
+    </view>
+  </view>
+
+  <!-- 底部 Tab 栏 -->
+  <view class="agent-tab-bar">
+    <view class="agent-tab" bindtap="goCurrent">
+      <image class="agent-tab-icon-img" src="/images/icon-call.png" mode="aspectFit" />
+      <view>当前号码</view>
+    </view>
+    <view class="agent-tab" bindtap="goHistory">
+      <image class="agent-tab-icon-img" src="/images/icon-record.png" mode="aspectFit" />
+      <view>历史记录</view>
+    </view>
+    <view class="agent-tab" bindtap="goFavorites">
+      <image class="agent-tab-icon-img" src="/images/icon-fav.png" mode="aspectFit" />
+      <view>收藏</view>
+    </view>
+    <view class="agent-tab active">
+      <image class="agent-tab-icon-img" src="/images/icon-user.png" mode="aspectFit" />
+      <view>我的</view>
+    </view>
+  </view>
+
+  <!-- 个人信息编辑弹窗 -->
+  <view wx:if="{{showNameModal}}" class="modal-mask" catchtap="closeNameModal">
+    <view class="modal" catchtap="noOp">
+      <view class="modal-title"><image class="ti" src="/images/icon-edit.png" mode="aspectFit" />编辑个人信息</view>
+      <view class="modal-section">
+        <view class="modal-label">姓名</view>
+        <input class="input" placeholder="请输入姓名" value="{{nameForm.real_name}}" bindinput="onNameInput" />
+      </view>
+      <view class="modal-section">
+        <view class="modal-label">手机号</view>
+        <input class="input" placeholder="请输入手机号" type="number" maxlength="11" value="{{nameForm.phone}}" bindinput="onPhoneInput" />
+      </view>
+      <view class="btn-row">
+        <button class="btn btn-secondary" bindtap="closeNameModal">取消</button>
+        <button class="btn" bindtap="onSaveName">保存</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 修改密码弹窗 -->
+  <view wx:if="{{showPasswordModal}}" class="modal-mask" catchtap="closePasswordModal">
+    <view class="modal" catchtap="noOp">
+      <view class="modal-title"><image class="ti" src="/images/icon-lock.png" mode="aspectFit" />修改密码</view>
+      <view class="modal-section">
+        <view class="modal-label">原密码</view>
+        <input class="input" password placeholder="请输入原密码" value="{{passwordForm.oldPassword}}" bindinput="onOldPasswordInput" />
+      </view>
+      <view class="modal-section">
+        <view class="modal-label">新密码（至少6位）</view>
+        <input class="input" password placeholder="请输入新密码" value="{{passwordForm.newPassword}}" bindinput="onNewPasswordInput" />
+      </view>
+      <view class="modal-section">
+        <view class="modal-label">确认新密码</view>
+        <input class="input" password placeholder="再次输入新密码" value="{{passwordForm.confirmPassword}}" bindinput="onConfirmPasswordInput" />
+      </view>
+      <view class="btn-row">
+        <button class="btn btn-secondary" bindtap="closePasswordModal">取消</button>
+        <button class="btn" bindtap="onSubmitPassword">确认修改</button>
+      </view>
+    </view>
+  </view>
+</view>

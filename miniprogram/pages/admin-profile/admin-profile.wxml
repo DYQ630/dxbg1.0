@@ -1,0 +1,62 @@
+<!-- pages/admin-profile/admin-profile.wxml -->
+<!-- 管理员个人中心：个人信息、修改密码、退出登录 -->
+<view class="page">
+  <view class="profile-hero">
+    <view class="hero-avatar">{{initial}}</view>
+    <view class="hero-info">
+      <view class="hero-name">{{user.real_name || user.username}}</view>
+      <view class="hero-account">@{{user.username}}</view>
+      <view class="hero-role">{{user.role === 'admin' ? '管理员' : '员工'}}</view>
+    </view>
+  </view>
+
+  <view class="card menu-list">
+    <view class="menu-item" bindtap="goUsers" hover-class="item-hover">
+      <image class="menu-icon" src="/images/icon-users.png" mode="aspectFit" />
+      <view class="menu-text">员工管理</view>
+      <view class="menu-arrow">›</view>
+    </view>
+    <view class="menu-divider"></view>
+    <view class="menu-item" bindtap="goRules" hover-class="item-hover">
+      <image class="menu-icon" src="/images/icon-gear.png" mode="aspectFit" />
+      <view class="menu-text">规则配置</view>
+      <view class="menu-arrow">›</view>
+    </view>
+    <view class="menu-divider"></view>
+    <view class="menu-item" bindtap="changePassword" hover-class="item-hover">
+      <image class="menu-icon" src="/images/icon-lock.png" mode="aspectFit" />
+      <view class="menu-text">修改密码</view>
+      <view class="menu-arrow">›</view>
+    </view>
+    <view class="menu-divider"></view>
+    <view class="menu-item" bindtap="onLogout" hover-class="item-hover">
+      <image class="menu-icon" src="/images/icon-logout.png" mode="aspectFit" />
+      <view class="menu-text logout">退出登录</view>
+    </view>
+  </view>
+
+  <view class="safe-bottom"></view>
+
+  <!-- 修改密码弹窗 -->
+  <view wx:if="{{showPwdModal}}" class="modal-mask" catchtap="closePwd">
+    <view class="modal" catchtap="noop">
+      <view class="modal-title">修改密码</view>
+      <view class="form-row">
+        <view class="form-label">当前密码</view>
+        <input class="form-input" password value="{{pwdForm.old}}" bindinput="onPwdInput" data-field="old" />
+      </view>
+      <view class="form-row">
+        <view class="form-label">新密码（≥6位）</view>
+        <input class="form-input" password value="{{pwdForm.new}}" bindinput="onPwdInput" data-field="new" />
+      </view>
+      <view class="form-row">
+        <view class="form-label">确认新密码</view>
+        <input class="form-input" password value="{{pwdForm.confirm}}" bindinput="onPwdInput" data-field="confirm" />
+      </view>
+      <view class="btn-row">
+        <view class="btn btn-secondary" bindtap="closePwd">取消</view>
+        <view class="btn btn-primary" bindtap="savePassword">保存</view>
+      </view>
+    </view>
+  </view>
+</view>

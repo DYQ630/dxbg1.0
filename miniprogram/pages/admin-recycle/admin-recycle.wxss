@@ -1,0 +1,388 @@
+/* ============================================================
+   admin-recycle.wxss - 回收池（员工竖排 + 标签筛选 + 批量删除）
+   两栏布局：左侧员工列表 + 右侧标签+号码列表
+   ============================================================ */
+
+/* ============================================================
+   可调整参数（修改这里即可改动页面布局，所有变量均可调）
+   ============================================================ */
+page {
+  /* 底部 tabBar 高度（让 .page 高度避开 tabBar，让两个滚轮区紧贴 tabBar 上方）
+     普通设备 100rpx；iPhone X+ 含底部小横条约 200rpx。调大可消除底部空白。 */
+  --tabbar-height: 200rpx;
+  /* 整个页面顶部下偏移（让所有卡片整体往下移 10rpx）。设 0rpx 恢复原状 */
+  --page-top-offset: 10rpx;
+  /* 主区滚动区底部留白（普通模式）。增大 → 最后一张卡更靠上；减小 → 接近 tabBar */
+  --main-scroll-bottom-gap: 0rpx;
+  /* 主区滚动区底部留白（编辑模式，避开底部批量栏） */
+  --main-scroll-batch-gap: 140rpx;
+  /* 左侧"姓名滚轮区"高度（用 px/rpx/% 都可）。默认 100% 占满 */
+  --emp-sidebar-height: 100%;
+  /* 右侧"号码滚轮区"高度（用 px/rpx/% 都可）。默认 100% 占满 */
+  --main-area-height: 100%;
+  /* 两栏主区最大高度（限制两个滚轮区总高）。默认 100% = 随父容器 */
+  --body-row-height: 100%;
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  /* 页面高度 = 屏幕总高 - tabBar 高 - 安全区。让滚轮区紧贴 tabBar 上方 */
+  height: calc(100vh - var(--tabbar-height) - env(safe-area-inset-bottom));
+  /* 整个页面顶部下偏移（让所有卡片下移） */
+  padding-top: var(--page-top-offset);
+  background: #FAF7FB;
+  box-sizing: border-box;
+}
+
+/* ---- 顶部导航（独立类名 .recycle-header，避开 app.wxss 全局 .header-bar 样式） ---- */
+.recycle-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8rpx 28rpx;
+  padding-top: max(8rpx, env(safe-area-inset-top));
+  background: #fff;
+  border-bottom: 1rpx solid #F0F0F0;
+  flex-shrink: 0;
+}
+.rh-left { display: flex; flex-direction: column; gap: 2rpx; }
+.rh-title {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #303133;
+  letter-spacing: 1rpx;
+}
+.rh-sub {
+  font-size: 22rpx;
+  color: #909399;
+}
+.rh-right { display: flex; align-items: center; }
+.edit-btn {
+  background: linear-gradient(135deg, #FF6B9D 0%, #FF8FB1 100%);
+  color: #fff;
+  padding: 18rpx 28rpx;
+  border-radius: 32rpx;
+  font-size: 26rpx;
+  font-weight: 500;
+  box-shadow: 0 4rpx 12rpx rgba(255, 107, 157, 0.25);
+}
+.edit-btn:active { opacity: 0.85; transform: scale(0.96); }
+
+/* ---- 顶部统计条 ---- */
+.stats-row {
+  display: flex;
+  align-items: center;
+  background: linear-gradient(135deg, #FFFBFC, #FFF5F8);
+  padding: 6rpx 8rpx;
+  border-bottom: 1rpx solid #F0F0F0;
+  flex-shrink: 0;
+}
+.stat-item { flex: 1; text-align: center; }
+.s-num { font-size: 30rpx; font-weight: 700; }
+.s-num.red    { color: #F56C6C; }
+.s-num.orange { color: #E6A23C; }
+.s-num.blue   { color: #5B8FF9; }
+.s-lbl { font-size: 20rpx; color: #909399; margin-top: 2rpx; }
+.stat-divider { width: 1rpx; height: 36rpx; background: #E4E7ED; flex-shrink: 0; }
+
+/* ---- 全宽筛选带（标签 + 使用次数，铺满横向，不被左侧栏遮挡） ---- */
+.filter-band {
+  background: #fff;
+  border-bottom: 1rpx solid #F0F0F0;
+  flex-shrink: 0;
+}
+
+/* ---- 两栏主体 ---- */
+/* 总高度由 --body-row-height 控制（顶部可调参数处修改） */
+.body-row {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  height: var(--body-row-height);
+  overflow: hidden;
+  /* 不再预留 100rpx（造成底部永久空白），改由 .main-scroll 内部 padding 预留 */
+  padding-bottom: 0; /* 为底部批量栏留位 */
+}
+
+/* ---- 左侧员工竖排 ---- */
+/* 高度由 --emp-sidebar-height 控制（顶部可调参数处修改） */
+.emp-sidebar {
+  width: 140rpx;
+  flex-shrink: 0;
+  min-height: 0;
+  height: var(--emp-sidebar-height);
+  box-sizing: border-box;
+  background: #F5F5F5;
+  border-right: 1rpx solid #E4E7ED;
+}
+.emp-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12rpx 6rpx;
+  border-bottom: 1rpx solid #EBEEF5;
+  cursor: pointer;
+}
+.emp-item.active {
+  background: #FF6B9D;
+}
+.emp-name {
+  font-size: 26rpx;
+  color: #606266;
+  font-weight: 500;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 120rpx;
+}
+.emp-item.active .emp-name { color: #fff; }
+.emp-badge {
+  font-size: 20rpx;
+  background: #FFECF3;
+  color: #FF6B9D;
+  border-radius: 20rpx;
+  padding: 2rpx 12rpx;
+  margin-top: 6rpx;
+  min-width: 36rpx;
+  text-align: center;
+}
+.emp-item.active .emp-badge {
+  background: rgba(255,255,255,0.3);
+  color: #fff;
+}
+
+/* ---- 右侧主区 ---- */
+/* 高度由 --main-area-height 控制（顶部可调参数处修改） */
+.main-area {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  height: var(--main-area-height);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ---- 标签筛选行（位于全宽筛选带内） ---- */
+.tag-filter {
+  padding: 6rpx 18rpx 4rpx;
+}
+.tag-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 0 4rpx;
+}
+.tag-chip {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6rpx;
+  padding: 10rpx 20rpx;
+  background: #fff;
+  border: 1rpx solid #E4E7ED;
+  border-radius: 28rpx;
+  font-size: 25rpx;
+  color: #606266;
+  white-space: nowrap;
+  font-weight: 500;
+}
+.tag-chip.active {
+  background: linear-gradient(135deg, #FF6B9D, #FF8FB1);
+  border-color: #FF6B9D;
+  color: #fff;
+}
+.tcnt {
+  font-size: 23rpx;
+  opacity: 0.85;
+}
+
+/* ---- 使用次数筛选行（互斥单选，位于全宽筛选带内） ---- */
+.usage-filter {
+  padding: 2rpx 18rpx 6rpx;
+  white-space: nowrap;
+}
+.uf-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 10rpx;
+  padding: 0 4rpx;
+}
+.uf-label {
+  font-size: 22rpx;
+  color: #C0C4CC;
+  flex-shrink: 0;
+  margin-right: 2rpx;
+}
+.uf-chip {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6rpx;
+  padding: 8rpx 18rpx;
+  background: #F5F5F5;
+  border: 1rpx solid #EBEEF5;
+  border-radius: 28rpx;
+  font-size: 22rpx;
+  color: #606266;
+  white-space: nowrap;
+  font-weight: 500;
+}
+.uf-chip.active {
+  background: linear-gradient(135deg, #FF6B9D, #FF8FB1);
+  border-color: #FF6B9D;
+  color: #fff;
+}
+.ufcnt {
+  font-size: 20rpx;
+  opacity: 0.85;
+}
+
+/* ---- 主区滚动区 ---- */
+/* flex:1 + min-height:0 + border-box：避免内容被裁 / 底部大片空白 */
+/* 底部留白由 --main-scroll-bottom-gap 控制（顶部可调参数处修改） */
+.main-scroll {
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 4rpx 10rpx calc(env(safe-area-inset-bottom) + var(--main-scroll-bottom-gap));
+}
+/* 编辑模式：底部留白由 --main-scroll-batch-gap 控制 */
+.main-scroll.with-batch {
+  padding-bottom: calc(env(safe-area-inset-bottom) + var(--main-scroll-batch-gap));
+}
+
+/* ---- 号码卡片 ---- */
+.num-card {
+  display: flex;
+  align-items: flex-start;
+  background: #fff;
+  border-radius: 12rpx;
+  padding: 14rpx;
+  margin-bottom: 6rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,.04);
+  border: 1rpx solid #F0F0F0;
+}
+
+/* checkbox */
+.card-check { margin-right: 14rpx; padding-top: 4rpx; flex-shrink: 0; }
+.ckbox {
+  width: 40rpx; height: 40rpx;
+  border: 2rpx solid #DCDFE6;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24rpx; color: #fff;
+}
+.ckbox.checked { background: #FF6B9D; border-color: #FF6B9D; }
+
+/* 卡片主体 */
+.card-body { flex: 1; min-width: 0; }
+.phone-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10rpx;
+}
+.phone-num {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #303133;
+  font-family: 'SF Mono', Consolas, monospace;
+}
+
+.card-meta { display: flex; flex-wrap: wrap; gap: 8rpx; margin-bottom: 8rpx; }
+.meta-pill {
+  font-size: 22rpx;
+  padding: 2rpx 12rpx;
+  background: #F5F7FA;
+  color: #606266;
+  border-radius: 6rpx;
+}
+.meta-pill.agent { background: #E8F3FF; color: #5B8FF9; }
+
+.tag-chips { display: flex; flex-wrap: wrap; gap: 6rpx; margin-bottom: 6rpx; }
+.num-tag {
+  font-size: 20rpx;
+  padding: 2rpx 10rpx;
+  border-radius: 8rpx;
+}
+
+.del-time { font-size: 22rpx; color: #909399; margin-top: 4rpx; }
+
+/* 单条操作 */
+.card-ops {
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+  margin-left: 16rpx;
+  flex-shrink: 0;
+}
+.op-btn {
+  padding: 14rpx 20rpx;
+  border-radius: 10rpx;
+  font-size: 24rpx;
+  text-align: center;
+  min-width: 88rpx;
+  font-weight: 500;
+}
+.op-btn:active { opacity: 0.85; transform: scale(0.96); }
+.op-btn.restore {
+  background: linear-gradient(135deg, #67C23A 0%, #85CE61 100%);
+  color: #fff;
+  box-shadow: 0 2rpx 8rpx rgba(103, 194, 58, 0.25);
+}
+.op-btn.danger {
+  background: linear-gradient(135deg, #F56C6C 0%, #F89898 100%);
+  color: #fff;
+  box-shadow: 0 2rpx 8rpx rgba(245, 108, 108, 0.25);
+}
+
+/* ---- 加载/空状态 ---- */
+.loading-state, .empty-state { text-align: center; padding: 80rpx 0; }
+.empty-icon { font-size: 96rpx; }
+.empty-text { font-size: 28rpx; color: #909399; margin-top: 16rpx; }
+.load-more { text-align: center; padding: 20rpx 0; }
+.load-more text { font-size: 24rpx; color: #909399; }
+.no-more { color: #C0C4CC; }
+
+/* ---- 底部批量操作栏 ---- */
+.batch-bar {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16rpx 32rpx calc(16rpx + env(safe-area-inset-bottom));
+  background: #fff;
+  border-top: 1rpx solid #F0F0F0;
+  z-index: 10;
+}
+.batch-left { display: flex; align-items: center; gap: 20rpx; }
+.batch-all {
+  display: flex; align-items: center; gap: 10rpx;
+  font-size: 26rpx; color: #606266;
+}
+.batch-count { font-size: 24rpx; color: #909399; }
+.batch-btns { display: flex; gap: 16rpx; }
+.batch-btn {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 14rpx 28rpx;
+  border-radius: 12rpx;
+  font-size: 26rpx;
+  color: #fff;
+  font-weight: 600;
+}
+.batch-btn .inl-ico {
+  width: 28rpx;
+  height: 28rpx;
+  flex-shrink: 0;
+}
+.batch-btn.restore { background: linear-gradient(135deg, #67C23A 0%, #85CE61 100%); box-shadow: 0 2rpx 8rpx rgba(103, 194, 58, 0.25); }
+.batch-btn.del { background: linear-gradient(135deg, #F56C6C 0%, #F89898 100%); box-shadow: 0 2rpx 8rpx rgba(245, 108, 108, 0.25); }
+.btn-hover { opacity: 0.8; }

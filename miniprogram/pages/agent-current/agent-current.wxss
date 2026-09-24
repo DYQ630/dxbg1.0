@@ -1,0 +1,95 @@
+/* ============================================================
+   邀约员 · 当前号码
+   ============================================================ */
+
+/* 横向滚动标签 */
+.tag-scroll {
+  width: 100%;
+  white-space: nowrap;
+}
+.tag-row {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  padding: 8rpx 0;
+}
+.tag-row .tag-chip {
+  flex-shrink: 0;
+  margin-right: 16rpx;
+}
+/* 选中态高亮优先（高于全局 .tag-chip.selected，保障 .tag-row 包表场景生效） */
+/* 注意：不要加 transform: scale()，在 iOS 真机上会让 scroll-view 重算布局，
+   造成整个外层页面被推上去、上方内容超出可视区被裁到看不见的现象。 */
+.tag-row .tag-chip.selected {
+  background: var(--c, #FE7BAC) !important;
+  color: #fff !important;
+  border-color: var(--c, #FE7BAC) !important;
+  box-shadow: 0 2rpx 8rpx rgba(254, 123, 172, 0.35);
+}
+
+/* 无号码空状态标题 */
+.empty-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8rpx;
+}
+
+/* 拨号图标按钮放大（覆盖全局 120rpx） */
+.phone-card .icon-btn {
+  width: 140rpx;
+  height: 140rpx;
+  font-size: 56rpx;
+  box-shadow: 0 10rpx 28rpx rgba(0, 0, 0, 0.15);
+}
+.phone-card .icon-btn .icon-btn-img {
+  width: 64rpx;
+  height: 64rpx;
+}
+.phone-card .icon-btn text { font-size: 22rpx; }
+
+/* 单按钮满宽（提交场景） */
+.btn-row-single {
+  justify-content: center;
+}
+.btn-row-single .btn {
+  width: 100%;
+  font-size: 32rpx;
+  font-weight: 600;
+  letter-spacing: 2rpx;
+}
+
+/* 提交按钮禁用态 */
+.btn-disabled {
+  background-color: #cccccc !important;
+  color: #ffffff !important;
+  border-color: #cccccc !important;
+  opacity: 0.7;
+}
+
+/* 未拨号时锁定态：标签 / 备注 都变灰 + not-allowed */
+.tag-row .tag-chip.locked {
+  opacity: 0.45;
+  pointer-events: none;
+  filter: grayscale(0.6);
+}
+.note-input.locked {
+  opacity: 0.6;
+  background: #f5f5f7 !important;
+  color: #999 !important;
+}
+
+/* 未拨号顶部提示 */
+.dial-hint {
+  font-size: 26rpx;
+  color: #FE7BAC;
+  background: rgba(254, 123, 172, 0.08);
+  border-left: 4rpx solid #FE7BAC;
+  padding: 12rpx 16rpx;
+  border-radius: 8rpx;
+  margin-bottom: 16rpx;
+}
+
+/* 顶部沉浸式栏去掉固定 padding-top，改为 JS 动态 safeTop（兼容刘海屏 / iOS 安全区） */
+.header-bar {
+  padding-top: 0;
+}

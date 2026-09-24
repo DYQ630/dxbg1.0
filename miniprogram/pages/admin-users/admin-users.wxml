@@ -1,0 +1,147 @@
+<!-- pages/admin-users/admin-users.wxml -->
+<!-- 员工管理：列表 / 新建 / 编辑 / 启用停用 / 个人规则设置 -->
+<view class="page">
+  <!-- 顶栏 -->
+  <view class="hero">
+    <view class="hero-title"><image class="ti ti-white" src="/images/icon-users.png" mode="aspectFit" />员工管理</view>
+    <view class="hero-sub">共 {{allUsers.length}} 人</view>
+  </view>
+
+  <!-- 新建员工 -->
+  <view class="add-btn" bindtap="openCreate">+ 新建员工</view>
+
+  <!-- 加载中 -->
+  <view wx:if="{{loading}}" class="loading">加载中...</view>
+
+  <!-- 空状态 -->
+  <view wx:elif="{{!users.length}}" class="empty">
+    <image class="empty-img" src="/images/empty-state.png" mode="aspectFit" />
+    <view class="empty-text">暂无员工</view>
+    <view class="empty-hint">点击上方「+ 新建员工」添加第一位成员</view>
+  </view>
+
+  <!-- 员工列表 -->
+  <view wx:else class="user-list">
+    <view wx:for="{{users}}" wx:key="user_id" class="swipe-wrap">
+      <!-- 后置删除按钮（绝对定位右侧、低 z-index，被 swipe-content 遮住） -->
+      <view wx:if="{{item.user_id !== 1}}" class="swipe-action"
+            data-id="{{item.user_id}}"
+            catchtap="onSwipeDelete">
+        删除
+      </view>
+      <!-- 滑动层：填充整个 swipe-wrap、遮住 swipe-action，滑动后超出的部分被 overflow:hidden 裁剪从而露出 swipe-action -->
+      <!-- 注意：swipeOffsetPx 在 JS 中已是负数（卡片左滑 → offset 负），transform 直接使用，不用再加负号 -->
+      <view class="swipe-content"
+            style="transform: translateX({{item.user_id === swipeOpenId ? swipeOffsetPx : 0}}px); transition: {{touchingId === item.user_id ? 'none' : 'transform 0.22s ease'}};"
+            bindtouchstart="onSwipeStart"
+            bindtouchmove="onSwipeMove"
+            bindtouchend="onSwipeEnd"
+            bindtouchcancel="onSwipeEnd"
+            data-id="{{item.user_id}}">
+      <view class="user-card" data-id="{{item.user_id}}" bindtap="onUserCardTap">
+      <view class="user-avatar" style="background:{{item.bgColor}}">{{item.initial}}</view>
+      <view class="user-info">
+        <view class="user-name">{{item.real_name || item.username || ('员工' + item.user_id)}}</view>
+        <view class="user-account">@{{item.username}} · {{item.role === 'admin' ? '管理员' : '员工'}}</view>
+        <view class="user-rules">
+          <text class="rchip">日 {{item.daily_limit || '默认'}}</text>
+          <text class="rchip">历 {{item.history_count || '默认'}}</text>
+          <text class="rchip">藏 {{item.favorite_limit || '默认'}}</text>
+        </view>
+      </view>
+      <view class="user-actions">
+        <view wx:if="{{!item.is_active}}" class="status off">已停用</view>
+        <view wx:if="{{item.user_id !== 1}}" class="act-btn" data-id="{{item.user_id}}" catchtap="openEdit">编辑</view>
+        <view wx:if="{{item.user_id !== 1}}" class="act-btn" data-id="{{item.user_id}}" catchtap="openRule">规则</view>
+        <view wx:if="{{item.user_id !== 1}}" class="act-btn danger" data-id="{{item.user_id}}" data-active="{{item.is_active}}" catchtap="onToggle">{{item.is_active ? '停用' : '启用'}}</view>
+      </view>
+      </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 加载更多按钮：还有未显示的员工 -->
+  <view wx:if="{{users.length < allUsers.length && allUsers.length > 0}}"
+        class="load-more"
+        bindtap="loadMoreUsers">
+    加载更多 （{{users.length}}/{{allUsers.length}}）
+  </view>
+  <!-- 全部加载完 -->
+  <view wx:elif="{{allUsers.length > 0}}" class="load-more-end">— 已加载全部 {{allUsers.length}} 人 —</view>
+
+  <!-- 新建 / 编辑弹窗 -->
+  <view wx:if="{{editing}}" class="modal-mask" catchtap="closeEdit">
+    <view class="modal" catchtap="noOp">
+      <view class="modal-title">{{editing.user_id ? '编辑员工' : '新建员工'}}</view>
+
+      <view wx:if="{{!editing.user_id}}" class="form-row">
+        <view class="form-label">账号 *</view>
+        <input class="form-input" value="{{form.username}}" bindinput="onFormInput" data-field="username" placeholder="登录用户名"/>
+      </view>
+      <view wx:if="{{!editing.user_id}}" class="form-row">
+        <view class="form-label">初始密码 *</view>
+        <input class="form-input" password value="{{form.password}}" bindinput="onFormInput" data-field="password" placeholder="默认 123456"/>
+      </view>
+      <view class="form-row">
+        <view class="form-label">姓名</view>
+        <input class="form-input" value="{{form.real_name}}" bindinput="onFormInput" data-field="real_name" placeholder="真实姓名"/>
+      </view>
+      <view wx:if="{{!editing.user_id}}" class="form-row">
+        <view class="form-label">角色</view>
+        <view class="role-pick">
+          <view class="rp {{form.role === 'agent' ? 'active' : ''}}" bindtap="onRolePick" data-role="agent">员工</view>
+          <view class="rp {{form.role === 'admin' ? 'active' : ''}}" bindtap="onRolePick" data-role="admin">管理员</view>
+        </view>
+      </view>
+      <view class="form-row">
+        <view class="form-label">每日分配上限</view>
+        <input class="form-input" type="number" value="{{form.daily_limit}}" bindinput="onFormInput" data-field="daily_limit" placeholder="60"/>
+      </view>
+      <view class="form-row">
+        <view class="form-label">历史记录条数</view>
+        <input class="form-input" type="number" value="{{form.history_count}}" bindinput="onFormInput" data-field="history_count" placeholder="50"/>
+      </view>
+      <view class="form-row">
+        <view class="form-label">收藏上限</view>
+        <input class="form-input" type="number" value="{{form.favorite_limit}}" bindinput="onFormInput" data-field="favorite_limit" placeholder="5"/>
+      </view>
+      <view class="form-row">
+        <view class="form-label">回收天数</view>
+        <input class="form-input" type="number" value="{{form.recycle_days}}" bindinput="onFormInput" data-field="recycle_days" placeholder="30"/>
+      </view>
+
+      <view class="btn-row">
+        <view class="btn btn-secondary" bindtap="closeEdit">取消</view>
+        <view class="btn btn-primary" bindtap="saveUser">保存</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 规则设置弹窗 -->
+  <view wx:if="{{ruleEditing}}" class="modal-mask" catchtap="closeRule">
+    <view class="modal" catchtap="noOp">
+      <view class="modal-title"><image class="ti" src="/images/icon-gear.png" mode="aspectFit" />规则设置</view>
+      <view class="rule-tip">留空 = 继承全局规则</view>
+      <view class="form-row">
+        <view class="form-label">每日分配上限 <text class="hint">全局 {{global.daily_limit}}</text></view>
+        <input class="form-input" type="number" value="{{ruleForm.daily_limit}}" bindinput="onRuleInput" data-field="daily_limit" placeholder="留空继承"/>
+      </view>
+      <view class="form-row">
+        <view class="form-label">历史条数 <text class="hint">全局 {{global.history_count}}</text></view>
+        <input class="form-input" type="number" value="{{ruleForm.history_count}}" bindinput="onRuleInput" data-field="history_count" placeholder="留空继承"/>
+      </view>
+      <view class="form-row">
+        <view class="form-label">收藏上限 <text class="hint">全局 {{global.favorite_limit}}</text></view>
+        <input class="form-input" type="number" value="{{ruleForm.favorite_limit}}" bindinput="onRuleInput" data-field="favorite_limit" placeholder="留空继承"/>
+      </view>
+      <view class="form-row">
+        <view class="form-label">回收天数 <text class="hint">全局 {{global.recycle_days}}</text></view>
+        <input class="form-input" type="number" value="{{ruleForm.recycle_days}}" bindinput="onRuleInput" data-field="recycle_days" placeholder="留空继承"/>
+      </view>
+      <view class="btn-row">
+        <view class="btn btn-secondary" bindtap="closeRule">取消</view>
+        <view class="btn btn-primary" bindtap="saveRule">保存</view>
+      </view>
+    </view>
+  </view>
+</view>

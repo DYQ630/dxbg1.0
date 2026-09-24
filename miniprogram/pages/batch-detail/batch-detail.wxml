@@ -1,0 +1,56 @@
+<!-- pages/batch-detail/batch-detail.wxml -->
+<!-- 导入批次号码明细页：某批次下全部号码及状态列表 -->
+<view class="page">
+  <!-- 顶部渐变信息栏 -->
+  <view class="header-bar">
+    <view class="title"><image class="ti ti-white" src="/images/icon-package.png" mode="aspectFit" />批次明细</view>
+    <view class="subtitle">{{batch.filename || ('批次 #' + batchId)}}</view>
+  </view>
+
+  <!-- 批次统计 -->
+  <view class="card" wx:if="{{batch}}">
+    <view class="stat-grid">
+      <view class="stat-item">
+        <view class="num">{{batch.total || 0}}</view>
+        <view class="label">总数</view>
+      </view>
+      <view class="stat-item">
+        <view class="num text-success">{{batch.success || 0}}</view>
+        <view class="label">成功</view>
+      </view>
+      <view class="stat-item">
+        <view class="num text-danger">{{batch.failed || 0}}</view>
+        <view class="label">失败</view>
+      </view>
+    </view>
+    <view class="batch-time" wx:if="{{batch.created_at}}">导入时间：{{batch.created_at}}</view>
+  </view>
+
+  <!-- 加载中 -->
+  <view wx:if="{{loading && numbers.length === 0}}" class="card">
+    <view class="empty">加载中...</view>
+  </view>
+
+  <!-- 号码列表 -->
+  <block wx:elif="{{numbers.length > 0}}">
+    <view class="num-count">共 {{numbers.length}} 个号码（点击可编辑记录）</view>
+    <scroll-view scroll-y class="list-scroll" enhanced show-scrollbar="{{false}}">
+      <view wx:for="{{numbers}}" wx:key="id" class="card num-row" bindtap="onTapNumber" data-id="{{item.id}}">
+        <view class="idx">{{item._idx}}</view>
+        <view class="flex-1">
+          <view class="phone">{{item.number_masked}}</view>
+          <view class="info">{{item.carrier}} · {{item.region}}</view>
+        </view>
+        <view class="status {{item.statusInfo.cls}}">{{item.statusInfo.text}}</view>
+      </view>
+    </scroll-view>
+  </block>
+
+  <!-- 空状态 -->
+  <view wx:else class="card">
+    <view class="empty">
+      <image class="empty-img" src="/images/empty-state.png" mode="aspectFit" />
+      <view class="empty-title">该批次暂无号码</view>
+    </view>
+  </view>
+</view>

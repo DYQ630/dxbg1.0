@@ -1,0 +1,132 @@
+/* ============================================================
+   admin-stats.wxss - 数据统计
+   主题：粉紫渐变 #FF6B9D -> #9B7EDE（字面色）
+   ============================================================ */
+
+/* 日期范围 Tab */
+.range-tabs {
+  display: flex;
+  gap: 16rpx;
+  margin-bottom: 24rpx;
+}
+.range-tab {
+  flex: 1;
+  text-align: center;
+  padding: 16rpx 0;
+  font-size: 28rpx;
+  color: #8E8AA0;
+  border-radius: 24rpx;
+  background: #FAF7FB;
+  transition: all 0.2s;
+}
+.range-tab.active {
+  background: linear-gradient(135deg, #FF6B9D 0%, #9B7EDE 100%);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* 加载中 */
+.loading-row {
+  text-align: center;
+  color: #8E8AA0;
+  font-size: 26rpx;
+  padding: 56rpx 0;
+}
+
+/* 4 格大数字 */
+.stat-card {
+  flex: 1 1 45%;
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 32rpx 16rpx;
+  text-align: center;
+  box-shadow: 0 4rpx 20rpx rgba(255, 107, 157, 0.08);
+}
+.stat-card.big .stat-num {
+  font-size: 52rpx;
+}
+.stat-num {
+  font-size: 44rpx;
+  font-weight: 700;
+  color: #2D2A3F;
+  line-height: 1.2;
+}
+.stat-num.green { color: #67C23A; }
+.stat-num.red { color: #F56C6C; }
+.stat-num.blue { color: #5B8FF9; }
+.stat-label {
+  font-size: 22rpx;
+  color: #8E8AA0;
+  margin-top: 8rpx;
+}
+
+/* 号码池剩余提示 */
+.pool-hint {
+  text-align: center;
+  font-size: 26rpx;
+  color: #8E8AA0;
+  padding: 24rpx 0;
+}
+.pool-num {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #FF6B9D;
+}
+
+/* 空状态 */
+.empty-state {
+  text-align: center;
+  padding: 64rpx 0;
+}
+.empty-icon {
+  font-size: 80rpx;
+  margin-bottom: 16rpx;
+}
+.empty-text {
+  font-size: 26rpx;
+  color: #909399;
+}
+
+/* 人员明细 */
+.detail-scroll {
+  max-height: 720rpx;
+}
+.detail-row {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid #F2F0F5;
+}
+.detail-row:last-child {
+  border-bottom: none;
+}
+.detail-name {
+  width: 180rpx;
+  flex-shrink: 0;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #2D2A3F;
+}
+.detail-stats {
+  flex: 1;
+  display: flex;
+  justify-content: space-around;
+}
+.detail-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.stat-val {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #2D2A3F;
+}
+.stat-val.green { color: #67C23A; }
+.stat-val.red { color: #F56C6C; }
+.stat-val.blue { color: #5B8FF9; }
+.stat-lbl {
+  font-size: 20rpx;
+  color: #909399;
+  margin-top: 4rpx;
+}

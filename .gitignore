@@ -1,0 +1,64 @@
+# ===== Python =====
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ===== Node / 前端构建 =====
+node_modules/
+dist/
+build/
+*.log
+
+# ===== 数据库（绝不入库）=====
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# ===== 环境变量 / 密钥 =====
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.p12
+*.jks
+
+# ===== 上传的用户文件 =====
+uploads/
+
+# ===== 微信小程序私有配置 =====
+project.private.config.json
+
+# ===== AI 工具工作区（不入库）=====
+.assetwork/
+.openclaw/
+memory/
+.idea/
+.vscode/
+*.swp
+AGENTS.md
+HEARTBEAT.md
+IDENTITY.md
+MEMORY.md
+SOUL.md
+TOOLS.md
+USER.md
+.consolidate-state.json
+.qclaw-version
+
+# ===== 系统文件 =====
+.DS_Store
+Thumbs.db
+
+# ===== 大体积素材（按需取消注释）=====
+# generated-images/
+# avatars_*/

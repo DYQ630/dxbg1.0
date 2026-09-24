@@ -1,0 +1,69 @@
+<!-- pages/admin-rules/admin-rules.wxml -->
+<!-- 规则设置：全局规则编辑 + 邀约员个人规则入口 -->
+<view class="page">
+  <!-- 顶部说明 -->
+  <view class="header-banner">
+    <view class="title"><image class="ti ti-white" src="/images/icon-gear.png" mode="aspectFit" />规则配置</view>
+    <view class="subtitle">个人配置优先于全局配置</view>
+  </view>
+
+  <!-- 全局规则卡片 -->
+  <view class="card section">
+    <view class="section-title"><image class="ti" src="/images/icon-globe.png" mode="aspectFit" />全局规则</view>
+    <view class="section-desc">所有员工的默认规则，员工未设置个人规则时生效</view>
+
+    <view class="form-row">
+      <view class="form-label">每日分配号码上限</view>
+      <input class="form-input" type="number" value="{{global.daily_limit}}" bindinput="onGlobalInput" data-field="daily_limit" placeholder="60" />
+    </view>
+    <view class="form-row">
+      <view class="form-label">历史记录显示条数</view>
+      <input class="form-input" type="number" value="{{global.history_count}}" bindinput="onGlobalInput" data-field="history_count" placeholder="50" />
+    </view>
+    <view class="form-row">
+      <view class="form-label">收藏上限</view>
+      <input class="form-input" type="number" value="{{global.favorite_limit}}" bindinput="onGlobalInput" data-field="favorite_limit" placeholder="5" />
+    </view>
+    <view class="form-row">
+      <view class="form-label">号码回收天数</view>
+      <input class="form-input" type="number" value="{{global.recycle_days}}" bindinput="onGlobalInput" data-field="recycle_days" placeholder="7" />
+    </view>
+
+    <button class="btn-save" bindtap="saveGlobal" disabled="{{savingGlobal}}">保存全局规则</button>
+  </view>
+
+  <!-- 员工个人规则列表 -->
+  <view class="card section">
+    <view class="section-title"><image class="ti" src="/images/icon-user.png" mode="aspectFit" />员工个人规则</view>
+    <view class="section-desc">个人规则会覆盖全局规则对应字段</view>
+
+    <!-- 员工搜索框（仅在有员工时才显示） -->
+    <view wx:if="{{agents.length > 3}}" class="agent-search-wrap">
+      <image class="asi-ico" src="/images/icon-search.png" mode="aspectFit" />
+      <input
+        class="agent-search-input"
+        placeholder="按姓名 / 账号搜索员工（例：张三）"
+        value="{{searchKeyword}}"
+        bindinput="onAgentSearch"
+        confirm-type="search"
+      />
+      <text wx:if="{{searchKeyword}}" class="clear-btn" bindtap="onAgentSearchClear">×</text>
+    </view>
+
+    <view wx:if="{{!agents.length}}" class="empty">暂无员工</view>
+    <view wx:elif="{{!filteredAgents.length}}" class="empty">未找到匹配“{{searchKeyword}}”的员工</view>
+
+    <view wx:for="{{filteredAgents}}" wx:key="id" wx:for-item="item" class="agent-row" bindtap="goUserRule" data-id="{{item.id}}">
+      <view class="agent-avatar">{{item.real_name[0] || '?'}}</view>
+      <view class="agent-info">
+        <view class="agent-name">{{item.real_name || item.username}}</view>
+        <view class="agent-meta">
+          日 {{item.daily_limit || '默认'}} ·
+          历 {{item.history_count || '默认'}} ·
+          藏 {{item.favorite_limit || '默认'}}
+        </view>
+      </view>
+      <view class="agent-arrow">›</view>
+    </view>
+  </view>
+</view>

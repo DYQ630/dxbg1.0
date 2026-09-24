@@ -1,0 +1,169 @@
+<!-- ============================================================
+     pages/admin-pool/admin-pool.wxml - 号码池管理页
+     ============================================================
+     【页面功能】
+       管理员查看和管理所有手机号码：按状态过滤、分页浏览、
+       按拨打次数筛选、关键词搜索、批量操作、Excel 导入新号码
+
+     【状态 Tab（activeTab）语义】
+       all       = 全部号码（含所有状态）
+       available = 待分配 → 号码在池中，等待邀约员主动领取
+       assigned  = 已分配 → 某个邀约员已领取但尚未使用（回收后状态可能不同）
+       recycled  = 已使用 → 邀约员已使用并提交记录，该号码已流转完毕
+
+     【拨打次数 Chip（usageFilter）】
+       仅在「全部」Tab 下可用，与状态 Tab 叠加过滤
+       unused=0次 | used_1=1次 | used_2=2次 | used_3=3次 | used_4plus=4次及以上
+
+     【列表项字段说明】
+       item.number / item.number_masked : 号码明文 / 打码（138****1270）
+       item.carrier                    : 运营商（移动/联通/电信）
+       item.region                     : 号码归属地
+       item.usage_count                : 已被邀约员使用的次数
+       item.status_label               : 状态中文标签（待分配/已使用/已收藏/已分配/已回收）
+       item.assigned_to_name           : 当前持有该号码的邀约员姓名
+       item._cssClass                  : JS 计算的状态颜色样式类（pool/used/favorite/assigned/recycled）
+       item._revealed                  : 点击后切换为 true，显示完整号码；false 显示打码
+     ============================================================ -->
+<view class="page">
+  <!-- 顶部导航 -->
+  <view class="header-bar">
+    <view class="title"><image class="ti" src="/images/icon-pool.png" mode="aspectFit" />号码池</view>
+    <view class="header-right">
+      <text class="stats-text">{{poolStats.total || 0}} 个号码</text>
+    </view>
+  </view>
+
+  <!-- 池状态统计 -->
+  <view class="pool-strip">
+    <view class="ps-item">
+      <text class="ps-num green">{{poolStats.pool_remaining || 0}}</text>
+      <text class="ps-lbl">剩余可用</text>
+    </view>
+    <view class="ps-divider"></view>
+    <view class="ps-item">
+      <text class="ps-num blue">{{poolStats.assigned || 0}}</text>
+      <text class="ps-lbl">已分配</text>
+    </view>
+    <view class="ps-divider"></view>
+    <view class="ps-item">
+      <text class="ps-num orange">{{poolStats.used || 0}}</text>
+      <text class="ps-lbl">已使用</text>
+    </view>
+  </view>
+
+  <!-- 状态 Tab -->
+  <view class="tab-bar">
+    <view
+      wx:for="{{tabs}}"
+      wx:key="value"
+      class="tab {{activeTab === item.value ? 'active' : ''}}"
+      data-value="{{item.value}}"
+      bindtap="onTabChange"
+    >{{item.label}}</view>
+  </view>
+
+  <!-- 搜索 + 筛选操作栏 -->
+  <view class="action-bar">
+    <view class="search-wrap">
+      <image class="search-ico" src="/images/icon-search.png" mode="aspectFit" />
+      <input
+        class="search-input"
+        placeholder="搜索号码 / 归属地"
+        value="{{searchKeyword}}"
+        bindinput="onSearchInput"
+        confirm-type="search"
+        bindconfirm="onRefresh"
+      />
+      <text wx:if="{{searchKeyword}}" class="clear-btn" bindtap="onClearSearch">✕</text>
+    </view>
+    <view class="action-btns">
+      <view class="icon-btn" bindtap="onRefresh" hover-class="icon-btn-hover">
+        <image class="icon-btn-img" src="/images/icon-refresh.png" mode="aspectFit" />
+      </view>
+    </view>
+  </view>
+
+  <!-- 拨打次数 filter -->
+  <scroll-view scroll-x class="usage-filter {{activeTab !== 'all' ? 'disabled' : ''}}" enhanced show-scrollbar="{{false}}">
+    <view class="uf-row">
+      <view
+        wx:for="{{usageFilters}}"
+        wx:key="value"
+        class="uf-chip {{usageFilter === item.value ? 'active' : ''}}"
+        data-value="{{item.value}}"
+        catchtap="onUsageChipTap"
+      >{{item.label}} <text class="uf-count">{{usageCounts[item.value] || 0}}</text></view>
+    </view>
+  </scroll-view>
+
+  <!-- 加载中 -->
+  <view wx:if="{{loading}}" class="loading-row">
+    <text>加载中...</text>
+  </view>
+
+  <!-- 空状态 -->
+  <view wx:elif="{{!numbers.length}}" class="empty-state">
+    <image class="empty-img" src="/images/empty-state.png" mode="aspectFit" />
+    <view class="empty-text">暂无号码</view>
+  </view>
+
+  <!-- 号码列表
+       - 点击卡片切换打码/明文（bindtap=togglePhoneReveal）
+       - 显示内容：号码（打码或明文）、运营商、归属地、拨打次数、状态标签
+       - 若有 assigned_to_name 则显示当前持有邀约员姓名 -->
+  <scroll-view
+    wx:else
+    scroll-y
+    class="number-scroll"
+    enable-back-to-top
+    bindscrolltolower="loadMore"
+  >
+    <view
+      wx:for="{{numbers}}"
+      wx:key="id"
+      class="num-card"
+    >
+      <!-- 号码主体（点击切换完整号码 / 打码，与回收池一致） -->
+      <view class="card-body" bindtap="togglePhoneReveal" data-index="{{index}}" hover-class="card-body-hover" hover-stay-time="120">
+        <view class="card-top">
+          <view class="card-left">
+            <!-- 号码：_revealed=true 显示明文，false 显示打码（number_masked） -->
+            <text class="num-phone">{{item._revealed ? (item.number || '') : (item.number_masked || item.number)}}</text>
+            <view class="num-meta">
+              <text>{{item.carrier || '未知运营商'}}</text>
+              <text wx:if="{{item.region}}"> · {{item.region}}</text>
+              <!-- 拨打次数 Badge：0次=无色，1次=黄色，2次及以上=红色 -->
+              <text class="usage-badge {{item.usage_count >= 2 ? 'usage-high' : (item.usage_count === 1 ? 'usage-mid' : 'usage-none')}}">拨打 {{item.usage_count || 0}} 次</text>
+            </view>
+          </view>
+          <view class="card-right">
+            <!-- 状态标签：通过 _cssClass（JS 计算）决定颜色样式类 -->
+            <text class="status-tag status-{{item._cssClass || item.status}}">{{item.status_label || item.status}}</text>
+          </view>
+        </view>
+        <!-- 若该号码已分配给某邀约员，显示其姓名 -->
+        <view wx:if="{{item.assigned_to_name}}" class="assignee-row">
+          <image class="inl-ico" src="/images/icon-user.png" mode="aspectFit" />
+          <text class="assignee-name">{{item.assigned_to_name}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 加载更多 -->
+    <view wx:if="{{hasMore}}" class="load-more" catchtap="loadMore">
+      <text wx:if="{{loadingMore}}">加载中...</text>
+      <text wx:else>加载更多</text>
+    </view>
+    <view wx:elif="{{numbers.length > 0}}" class="load-more">
+      <text class="text-sub">没有更多了</text>
+    </view>
+  </scroll-view>
+
+  <!-- 底部导入按钮 -->
+  <view class="bottom-bar">
+    <view class="import-btn" bindtap="onImportFile" hover-class="btn-hover">
+      <image class="inl-ico inl-white" src="/images/icon-download.png" mode="aspectFit" />导入号码
+    </view>
+  </view>
+</view>

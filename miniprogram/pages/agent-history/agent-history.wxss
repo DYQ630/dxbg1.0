@@ -1,0 +1,162 @@
+/* ============================================================
+   邀约员 · 历史记录
+   ============================================================ */
+
+/* 列表滚动区 */
+.list-scroll {
+  height: calc(100vh - 320rpx);
+}
+
+/* 记录头部：左侧号码 + 右上操作图标 */
+.record-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.number-block {
+  flex: 1;
+  min-width: 0;
+}
+.number {
+  font-size: 34rpx;
+  font-weight: 600;
+  word-break: break-all;
+}
+.number-masked {
+  color: var(--text);
+  letter-spacing: 2rpx;
+}
+.number-revealed {
+  color: var(--primary);
+}
+
+/* 右上：4 个图标按钮横排 */
+.actions {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-left: 16rpx;
+}
+.icon-btn {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 50%;
+  background: #F5F5F7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30rpx;
+  margin-left: 12rpx;
+}
+.icon-btn:first-child {
+  margin-left: 0;
+}
+.record-card .icon-btn .icon-btn-img {
+  width: 32rpx;
+  height: 32rpx;
+}
+/* 收藏按钮：未收藏灰色，已收藏黄色高亮 */
+.star-btn {
+  background: #F0F0F0;
+}
+.star-btn.starred {
+  background: #FFE08A;
+}
+/* 删除按钮：hover/active 时偏红 */
+.del-btn {
+  background: #F5F5F7;
+}
+
+/* 中部信息区 */
+.record-meta {
+  margin-top: 14rpx;
+}
+.record-meta .info {
+  font-size: 24rpx;
+  color: var(--text-sub);
+}
+.remark {
+  margin-top: 10rpx;
+  font-size: 26rpx;
+  color: var(--text);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  white-space: normal;
+  overflow: hidden;
+}
+.meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12rpx;
+}
+.meta-row .time {
+  font-size: 22rpx;
+  color: var(--text-sub);
+}
+.meta-row .customer {
+  font-size: 22rpx;
+  color: var(--info);
+}
+
+/* 标签药丸（彩色圆点 + 名称） */
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 12rpx;
+}
+.tag-pill {
+  display: inline-flex;
+  align-items: center;
+  background: #F5F5F7;
+  border-radius: 20rpx;
+  padding: 6rpx 16rpx;
+  font-size: 22rpx;
+  color: var(--text);
+  margin: 6rpx 12rpx 0 0;
+  line-height: 1.4;
+}
+.tag-pill .tag-dot {
+  width: 14rpx;
+  height: 14rpx;
+  border-radius: 50%;
+  margin-right: 8rpx;
+  flex-shrink: 0;
+}
+.tag-pill.wechat {
+  background: #E8F0FE;
+  color: var(--info);
+}
+
+/* 加载到底提示 */
+.load-end {
+  text-align: center;
+  color: var(--text-sub);
+  font-size: 24rpx;
+  padding: 24rpx 0 40rpx;
+}
+
+/* 横向标签滚动 */
+.tag-scroll {
+  width: 100%;
+  white-space: nowrap;
+}
+.tag-row {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  padding: 8rpx 0;
+}
+.tag-row .tag-chip {
+  flex-shrink: 0;
+  margin-right: 16rpx;
+}
+
+/* 空状态标题 */
+.empty-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8rpx;
+}

@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<!-- ============================================================
+     邀约宝 · Web 管理端（单文件 Vue3 + axios 应用）
+     面向 PC / 浏览器使用，与小程序端共用同一套 FastAPI 后端。
+     - 登录后按角色展示：管理员（首页/号码池/员工/规则/看板）或邀约员（当前号码/历史/收藏）
+     - 样式主题：粉紫渐变（#FF6B9D → #9B7EDE），与小程序保持一致
+     - API 基地址默认同源（由后端静态托管本文件）
+     ============================================================ -->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#FF6B9D" />
+  <title>邀约宝 - 电销管理系统</title>
+  <script src="https://cdn.jsdelivr.net/npm/vue@3.4.21/dist/vue.global.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
+  <style>
+    :root {
+      --primary: #FF6B9D;
+      --primary-light: #FFC2D7;
+      --primary-bg: #FFF0F5;
+      --secondary: #9B7EDE;
+      --bg: #FAF7FB;
+      --card: #FFFFFF;
+      --text: #2D2A3F;
+      --text-sub: #8E8AA0;
+      --border: #F0EDF2;
+      --success: #67C23A;
+      --warning: #E6A23C;
+      --danger: #F56C6C;
+      --info: #5B8FF9;
+      --shadow: 0 4px 16px rgba(255, 107, 157, 0.08);
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+    }
+    #app { max-width: 480px; margin: 0 auto; min-height: 100vh; background: var(--bg); }
+
+    /* ===== 登录页 ===== */
+    .login-page {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #FF6B9D 0%, #9B7EDE 100%);
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 40px 30px;
+    }
+    .login-page .logo {
+      color: white; text-align: center; font-size: 36px; font-weight: 700;
+      margin-bottom: 8px; letter-spacing: 2px;
+    }
+    .login-page .slogan {
+      color: rgba(255,255,255,0.95); text-align: center;
+      font-size: 14px; margin-bottom: 50px; letter-spacing: 1px;
+    }
+    .login-input {
+      width: 100%; padding: 16px 18px; border: none; border-radius: 14px;
+      font-size: 15px; margin-bottom: 14px; outline: none;
+      background: white; color: var(--text);
+    }
+    .login-input::placeholder { color: #B5B0C5; }
+    .login-btn {
+      width: 100%; padding: 16px; border: none; border-radius: 14px;
+      background: white; color: var(--primary); font-size: 16px; font-weight: 600;
+      cursor: pointer; margin-top: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .login-btn:active { transform: scale(0.98); }
+    .login-tip {
+      text-align: center; color: rgba(255,255,255,0.85);
+      margin-top: 24px; font-size: 12px;
+    }
+
+    /* ===== 通用 ===== */
+    .page { padding: 16px 16px 90px; }
+    .header-bar {
+      background: linear-gradient(135deg, #FF6B9D 0%, #9B7EDE 100%);
+      color: white; padding: 24px 16px 32px;
+      border-radius: 0 0 24px 24px; margin: -16px -16px 18px;
+    }
+    .header-bar h1 { margin: 0; font-size: 20px; font-weight: 600; }
+    .header-bar .sub { font-size: 12px; opacity: 0.92; margin-top: 6px; }
+    .header-bar .progress-bar {
+      height: 6px; background: rgba(255,255,255,0.3);
+      border-radius: 3px; overflow: hidden; margin-top: 12px;
+    }
+    .header-bar .progress-bar .fill {
+      height: 100%; background: white; border-radius: 3px;
+      transition: width 0.3s;
+    }
+
+    .card {
+      background: var(--card); border-radius: 16px;
+      padding: 16px; margin-bottom: 12px;
+      box-shadow: var(--shadow);
+    }
+    .card-title {
+      font-size: 15px; font-weight: 600; margin-bottom: 12px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .card-title .more { color: var(--primary); font-size: 12px; font-weight: normal; cursor: pointer; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; }
+
+    .stat-box {
+      background: linear-gradient(135deg, #FFF0F5 0%, #F5F0FF 100%);
+      border-radius: 12px; padding: 14px 8px; text-align: center;
+    }
+    .stat-box .num { font-size: 22px; font-weight: 700; color: var(--primary); }
+    .stat-box .label { font-size: 11px; color: var(--text-sub); margin-top: 4px; }
+    .stat-box.clickable { cursor: pointer; }
+    .stat-box.clickable:active { transform: scale(0.97); }
+    .stat-box .big-icon { font-size: 28px; margin-bottom: 4px; }
+
+    /* ===== 主号码卡片 ===== */
+    .phone-card {
+      background: linear-gradient(135deg, #FF6B9D 0%, #FF9DBE 50%, #C99BFF 100%);
+      color: white; border-radius: 20px;
+      padding: 28px 20px; text-align: center;
+      box-shadow: 0 10px 30px rgba(255, 107, 157, 0.3);
+    }
+    .phone-card .label-top { font-size: 12px; opacity: 0.9; letter-spacing: 1px; }
+    .phone-card .number {
+      font-size: 36px; font-weight: 700; letter-spacing: 3px;
+      margin: 14px 0 8px; cursor: pointer;
+      font-family: "SF Mono", Consolas, monospace;
+    }
+    .phone-card .hint { font-size: 11px; opacity: 0.85; }
+    .phone-card .meta {
+      display: flex; justify-content: center; gap: 10px;
+      font-size: 12px; margin: 14px 0 20px;
+    }
+    .phone-card .meta .pill {
+      background: rgba(255,255,255,0.28); padding: 6px 14px;
+      border-radius: 14px; backdrop-filter: blur(10px);
+    }
+    .phone-card .actions {
+      display: flex; justify-content: center; gap: 24px; margin-top: 6px;
+    }
+    .icon-btn {
+      width: 60px; height: 60px; border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: white; color: var(--primary); font-size: 26px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+      border: none; cursor: pointer; transition: transform 0.1s;
+    }
+    .icon-btn:active { transform: scale(0.92); }
+    .icon-btn.secondary { background: rgba(255,255,255,0.25); color: white; }
+    .icon-btn .label { font-size: 10px; display: block; margin-top: 2px; }
+
+    /* ===== 按钮 ===== */
+    .btn {
+      background: linear-gradient(135deg, #FF6B9D 0%, #9B7EDE 100%);
+      color: white; border: none; border-radius: 24px;
+      padding: 14px 24px; font-size: 15px; font-weight: 500;
+      width: 100%; cursor: pointer;
+      box-shadow: 0 4px 12px rgba(255, 107, 157, 0.25);
+      transition: transform 0.1s;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-secondary { background: white; color: var(--primary); border: 1.5px solid var(--primary-light); box-shadow: none; }
+    .btn-ghost { background: var(--primary-bg); color: var(--primary); box-shadow: none; }
+    .btn-danger { background: var(--danger); box-shadow: 0 4px 12px rgba(245, 108, 108, 0.25); }
+    .btn-sm { padding: 8px 14px; font-size: 13px; width: auto; }
+    .btn-row { display: flex; gap: 10px; margin-top: 12px; }
+    .btn-row .btn { flex: 1; }
+
+    /* ===== 标签 ===== */
+    .tag-chip {
+      display: inline-block; padding: 8px 14px; border-radius: 18px;
+      font-size: 13px; margin: 4px 6px 4px 0;
+      background: #F5F5F7; color: var(--text);
+      border: 1.5px solid transparent; cursor: pointer;
+      transition: all 0.15s; user-select: none;
+    }
+    .tag-chip.selected {
+      background: var(--primary); color: white; border-color: var(--primary);
+    }
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 10px;
+      font-size: 11px; margin-right: 4px;
+    }
+    .badge-success { background: #E1F3D8; color: #67C23A; }
+    .badge-warning { background: #FAECD8; color: #E6A23C; }
+    .badge-danger { background: #FDE2E2; color: #F56C6C; }
+    .badge-info { background: #E8F0FE; color: var(--info); }
+    .badge-purple { background: #F0E6FF; color: #9B7EDE; }
+
+    /* ===== 列表 ===== */
+    .list-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 0; border-bottom: 1px solid var(--border);
+    }
+    .list-item:last-child { border-bottom: none; }
+    .list-item .left .name { font-weight: 500; font-size: 14px; }
+    .list-item .left .desc { font-size: 12px; color: var(--text-sub); margin-top: 3px; }
+    .list-item .right { display: flex; align-items: center; gap: 10px; }
+
+    /* ===== 历史卡片 ===== */
+    .record-card { padding: 14px; }
+    .record-head {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      cursor: pointer;
+    }
+    .record-head .phone {
+      font-size: 22px; font-weight: 600; color: var(--primary);
+      font-family: "SF Mono", Consolas, monospace;
+    }
+    .record-head .info { font-size: 12px; color: var(--text-sub); margin-top: 4px; }
+    .record-head .tags { margin-top: 8px; }
+    .record-head .btns { display: flex; flex-direction: column; gap: 8px; }
+    .record-head .mini-btn {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: var(--primary-bg); color: var(--primary);
+      border: none; font-size: 14px; cursor: pointer;
+    }
+    .record-expand {
+      background: #FAFAFC; border-radius: 12px;
+      padding: 12px; margin-top: 12px;
+    }
+    .record-expand .note-label { font-size: 12px; color: var(--text-sub); margin-bottom: 6px; }
+    .record-expand .note-text { font-size: 13px; white-space: pre-wrap; color: var(--text); }
+    .record-expand .note-empty { color: #BBB; font-size: 13px; }
+    .record-expand .actions { display: flex; gap: 8px; margin-top: 12px; }
+    .record-expand .actions .btn { padding: 8px; font-size: 12px; }
+
+    /* ===== 底部导航 ===== */
+    .tab-bar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      max-width: 480px; margin: 0 auto;
+      background: white; display: flex; padding: 8px 0 10px;
+      box-shadow: 0 -2px 14px rgba(0,0,0,0.06);
+      z-index: 100;
+    }
+    .tab-bar .tab {
+      flex: 1; text-align: center; padding: 6px 0;
+      font-size: 11px; color: var(--text-sub); cursor: pointer;
+    }
+    .tab-bar .tab.active { color: var(--primary); }
+    .tab-bar .tab .icon { font-size: 22px; display: block; margin-bottom: 2px; }
+
+    /* ===== 图标图片（AI 生成，替代 emoji 占位） ===== */
+    .hd-ico { width: 22px; height: 22px; vertical-align: -4px; margin-right: 6px; filter: brightness(0) invert(1); }
+    .ct-ico { width: 18px; height: 18px; vertical-align: -3px; margin-right: 6px; }
+    .big-ico { width: 30px; height: 30px; margin: 0 auto 4px; display: block; }
+    .nav-ico { width: 24px; height: 24px; margin: 0 auto 2px; display: block; }
+    .empty-ico { width: 96px; height: 96px; margin: 0 auto 12px; opacity: 0.85; display: block; }
+    .mini-ico { width: 18px; height: 18px; display: block; margin: 0 auto; }
+    .act-ico { width: 16px; height: 16px; vertical-align: -2px; margin-right: 4px; }
+    .act-ico-white { filter: brightness(0) invert(1); }
+    .pill-ico { width: 13px; height: 13px; vertical-align: -2px; margin-right: 4px; filter: brightness(0) invert(1); }
+    .login-logo-img { width: 64px; height: 64px; border-radius: 16px; box-shadow: 0 10px 26px rgba(0,0,0,0.3); margin: 0 auto 12px; display: block; }
+
+    /* ===== 空状态 ===== */
+    .empty {
+      text-align: center; padding: 50px 20px; color: var(--text-sub);
+    }
+    .empty .icon { font-size: 48px; margin-bottom: 12px; opacity: 0.4; }
+    .empty .hint { font-size: 12px; margin-top: 6px; opacity: 0.8; }
+
+    /* ===== 弹窗 ===== */
+    .modal-mask {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+      z-index: 200; display: flex; align-items: flex-end; justify-content: center;
+      animation: fadein 0.2s;
+    }
+    @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideup { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .modal {
+      width: 100%; max-width: 480px; max-height: 80vh;
+      background: white; border-radius: 20px 20px 0 0;
+      padding: 20px 16px; overflow-y: auto;
+      animation: slideup 0.25s;
+    }
+    .modal-title {
+      text-align: center; font-size: 17px; font-weight: 600;
+      margin-bottom: 16px; color: var(--text);
+    }
+    .modal-section { margin-bottom: 16px; }
+    .modal-section .label { font-size: 13px; color: var(--text-sub); margin-bottom: 8px; }
+    .modal textarea {
+      width: 100%; border: 1px solid var(--border); border-radius: 10px;
+      padding: 10px; font-size: 14px; min-height: 90px;
+      font-family: inherit; resize: vertical; outline: none;
+      box-sizing: border-box;
+    }
+    .modal textarea:focus { border-color: var(--primary); }
+    .modal input[type="text"], .modal input[type="number"], .modal input[type="password"] {
+      width: 100%; border: 1px solid var(--border); border-radius: 10px;
+      padding: 12px; font-size: 14px; outline: none;
+      font-family: inherit; box-sizing: border-box; background: white;
+    }
+    .modal input:focus { border-color: var(--primary); }
+
+    .form-row { display: flex; align-items: center; margin-bottom: 12px; }
+    .form-row .form-label {
+      width: 90px; font-size: 13px; color: var(--text-sub); flex-shrink: 0;
+    }
+    .form-row .form-input { flex: 1; }
+    .form-row .form-input input {
+      width: 100%; border: 1px solid var(--border); border-radius: 10px;
+      padding: 10px 12px; font-size: 14px; outline: none; box-sizing: border-box;
+    }
+    .form-row .form-input input:focus { border-color: var(--primary); }
+
+    .switch {
+      display: inline-flex; align-items: center; cursor: pointer;
+    }
+    .switch-track {
+      width: 44px; height: 24px; background: #E0DAE8;
+      border-radius: 12px; position: relative; transition: background 0.2s;
+    }
+    .switch-track::after {
+      content: ''; position: absolute; top: 2px; left: 2px;
+      width: 20px; height: 20px; background: white; border-radius: 50%;
+      transition: left 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+    .switch.on .switch-track { background: var(--primary); }
+    .switch.on .switch-track::after { left: 22px; }
+    .switch-label { margin-left: 8px; font-size: 13px; }
+
+    /* ===== Toast ===== */
+    .toast {
+      position: fixed; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.78); color: white;
+      padding: 12px 20px; border-radius: 10px;
+      font-size: 14px; z-index: 999;
+      animation: fadein 0.2s;
+    }
+
+    /* ===== 进度条 ===== */
+    .progress-bar { height: 6px; background: #F0F0F3; border-radius: 3px; overflow: hidden; }
+    .progress-bar .fill { height: 100%; background: linear-gradient(90deg, #FF6B9D, #9B7EDE); border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- 登录页 -->
+    <div v-if="!token" class="login-page">
+      <img class="login-logo-img" src="assets/logo.png" alt="邀约宝">
+      <div class="logo">邀约宝</div>
+      <div class="slogan">企业电销 · 智能号码管理</div>
+      <input class="login-input" v-model="loginForm.username" placeholder="账号" />
+      <input class="login-input" v-model="loginForm.password" type="password" placeholder="密码" @keyup.enter="doLogin" />
+      <button class="login-btn" @click="doLogin">登 录</button>
+      <div class="login-tip">默认管理员账号 admin / admin123</div>
+    </div>
+
+    <!-- ========== 管理员界面 ========== -->
+    <div v-else-if="role === 'admin'">
+      <!-- 首页 -->
+      <div v-if="adminTab === 'home'">
+        <div class="header-bar">
+          <h1><img class="hd-ico" src="assets/icon-user.png">你好，{{ userInfo.real_name }}</h1>
+          <div class="sub">{{ today }} · 今日电销数据</div>
+        </div>
+        <div class="page">
+          <div class="card">
+            <div class="card-title"><img class="ct-ico" src="assets/icon-chart.png">今日数据</div>
+            <div class="grid-4">
+              <div class="stat-box"><div class="num">{{ adminStats.today.overview.total_used }}</div><div class="label">已用</div></div>
+              <div class="stat-box"><div class="num" style="color:#67C23A">{{ adminStats.today.overview.connected }}</div><div class="label">已接通</div></div>
+              <div class="stat-box"><div class="num" style="color:#F56C6C">{{ adminStats.today.overview.unconnected }}</div><div class="label">未接通</div></div>
+              <div class="stat-box"><div class="num" style="color:#9B7EDE">{{ adminStats.today.overview.wechat_added }}</div><div class="label">加微信</div></div>
+            </div>
+            <div style="margin-top:14px; padding-top:14px; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+              <span style="color:var(--text-sub); font-size:13px;">号码池剩余</span>
+              <span style="color:var(--primary); font-size:20px; font-weight:700;">{{ adminStats.pool.pool_remaining }}</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">
+              <img class="ct-ico" src="assets/icon-users.png">今日已使用明细
+              <span class="more" @click="adminTab='stats'">查看更多 →</span>
+            </div>
+            <div v-if="!adminStats.today.details.length" class="empty">
+              <img class="empty-ico" src="assets/empty-state.png">
+              <div>今天还没有数据</div>
+            </div>
+            <div v-else>
+              <div v-for="d in adminStats.today.details" :key="d.user_id" class="list-item">
+                <div class="left">
+                  <div class="name">{{ d.real_name }}</div>
+                  <div class="desc">已用 {{ d.total_used }} · 接通 {{ d.connected }} · 微信 {{ d.wechat_added }}</div>
+                </div>
+                <div class="badge badge-info">{{ d.total_used }} 条</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title"><img class="ct-ico" src="assets/icon-tip.png">快捷操作</div>
+            <div class="grid-3">
+              <div class="stat-box clickable" @click="adminTab='pool'">
+                <img class="big-ico" src="assets/icon-smartphone.png">
+                <div class="label">号码池</div>
+              </div>
+              <div class="stat-box clickable" @click="adminTab='users'">
+                <img class="big-ico" src="assets/icon-user.png">
+                <div class="label">员工管理</div>
+              </div>
+              <div class="stat-box clickable" @click="adminTab='rules'">
+                <img class="big-ico" src="assets/icon-gear.png">
+                <div class="label">规则设置</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 号码池 -->
+      <div v-if="adminTab === 'pool'">
+        <div class="header-bar"><h1><img class="hd-ico" src="assets/icon-pool.png">号码池管理</h1></div>
+        <div class="page">
+          <div class="card">
+            <div class="card-title"><img class="ct-ico" src="assets/icon-download.png">批量导入</div>
+            <div style="font-size:12px; color:var(--text-sub); margin-bottom:12px;">
+              先 <a @click="downloadTemplate" style="color:var(--primary); cursor:pointer; text-decoration:underline">下载 Excel 模板</a>，填入手机号后上传
+            </div>
+            <input type="file" accept=".xlsx,.xls" @change="onFileChange" ref="fileInput" style="display:none" />
+            <button class="btn btn-secondary" @click="$refs.fileInput.click()"><img class="act-ico" src="assets/icon-download.png">选择文件上传</button>
+            <div v-if="uploadStatus" style="margin-top:12px; font-size:13px; padding:8px 12px; background:var(--primary-bg); border-radius:8px;">{{ uploadStatus }}</div>
+          </div>
+
+          <div class="card">
+            <div class="card-title"><img class="ct-ico" src="assets/icon-chart.png">号码池状态</div>
+            <div class="grid-3">
+              <div class="stat-box"><div class="num">{{ adminStats.pool.total }}</div><div class="label">总数</div></div>
+              <div class="stat-box"><div class="num" style="color:#67C23A">{{ adminStats.pool.pool_remaining }}</div><div class="label">剩余</div></div>
+              <div class="stat-box"><div class="num" style="color:var(--text-sub)">{{ adminStats.pool.used }}</div><div class="label">已用</div></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title"><img class="ct-ico" src="assets/icon-package.png">导入记录（最近 10 个）</div>
+            <div v-if="!batches.length" class="empty"><img class="empty-ico" src="assets/empty-state.png">暂无记录</div>
+            <div v-else>
+              <div v-for="b in batches" :key="b.id" class="list-item">
+                <div class="left">
+                  <div class="name">{{ b.filename }}</div>
+                  <div class="desc">{{ formatTime(b.created_at) }} · 共 {{ b.total }} 条</div>
+                </div>
+                <div class="right">
+                  <span class="badge badge-success">成功 {{ b.success }}</span>
+                  <span class="badge badge-danger" style="margin-left:2px">失败 {{ b.failed }}</span>
+                  <button @click="deleteBatch(b.id)" style="background:none; border:none; color:var(--danger); cursor:pointer; margin-left:8px"><img class="mini-ico" src="assets/icon-trash.png"></button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 员工管理 -->
+      <div v-if="adminTab === 'users'">
+        <div class="header-bar"><h1><img class="hd-ico" src="assets/icon-users.png">员工管理</h1></div>
+        <div class="page">
+          <div class="card">
+            <button class="btn" @click="openAddUser">+ 新增邀约员</button>
+          </div>
+          <div class="card">
+            <div v-if="!userList.length" class="empty"><img class="empty-ico" src="assets/empty-state.png">暂无员工</div>
+            <div v-else>
+              <div v-for="u in userList" :key="u.id" class="list-item">
+                <div class="left">
+                  <div class="name">
+                    {{ u.real_name }}
+                    <span v-if="!u.is_active" class="badge badge-danger">已停职</span>
+                    <span v-if="u.role==='admin'" class="badge badge-purple">管理员</span>
+                  </div>
+                  <div class="desc">账号: {{ u.username }} · 手机: {{ u.phone || '-' }}</div>
+                </div>
+                <div class="right" v-if="u.role !== 'admin'">
+                  <button @click="openEditUser(u)" style="background:none; border:none; cursor:pointer"><img class="mini-ico" src="assets/icon-edit.png"></button>
+                  <button @click="toggleUser(u)" style="background:none; border:none; cursor:pointer; font-size:18px; margin-left:8px">
+                    {{ u.is_active ? '⏸️' : '▶️' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 规则设置 -->
+      <div v-if="adminTab === 'rules'">
+        <div class="header-bar"><h1><img class="hd-ico" src="assets/icon-gear.png">规则设置</h1></div>
+        <div class="page">
+          <div class="card">
+            <div class="card-title"><img class="ct-ico" src="assets/icon-globe.png">全局规则</div>
+            <div class="form-row"><div class="form-label">每日号码上限</div><div class="form-input"><input type="number" v-model.number="globalRule.daily_limit" /></div></div>
+            <div class="form-row"><div class="form-label">历史记录数量</div><div class="form-input"><input type="number" v-model.number="globalRule.history_count" /></div></div>
+            <div class="form-row"><div class="form-label">收藏数量上限</div><div class="form-input"><input type="number" v-model.number="globalRule.favorite_limit" /></div></div>
+            <div class="form-row"><div class="form-label">回收天数</div><div class="form-input"><input type="number" v-model.number="globalRule.recycle_days" /></div></div>
+            <button class="btn" @click="saveGlobalRule" style="margin-top:10px">保存全局规则</button>
+          </div>
+
+          <div class="card">
+            <div class="card-title"><img class="ct-ico" src="assets/icon-user.png">个人规则（覆盖全局）</div>
+            <div v-if="!userList.filter(u => u.role==='agent').length" class="empty" style="padding:30px">
+              <img class="empty-ico" src="assets/empty-state.png">
+              <div>请先添加员工</div>
+            </div>
+            <div v-else>
+              <div v-for="u in userList.filter(u => u.role==='agent')" :key="u.id" class="list-item" @click="openUserRule(u)" style="cursor:pointer">
+                <div class="left">
+                  <div class="name">{{ u.real_name }}</div>
+                  <div class="desc">{{ u.is_active ? '点击设置个人规则' : '已停职' }}</div>
+                </div>
+                <span style="color:var(--text-sub)">›</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 数据看板 -->
+      <div v-if="adminTab === 'stats'">
+        <div class="header-bar"><h1><img class="hd-ico" src="assets/icon-stats.png">数据看板</h1></div>
+        <div class="page">
+          <div class="card">
+            <div style="display:flex; gap:6px;">
+              <button v-for="r in statsRanges" :key="r.key" class="btn" :class="statsRange===r.key?'':'btn-ghost'" style="padding:10px 0; font-size:13px" @click="statsRange=r.key; loadStats()">
+                {{ r.label }}
+              </button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title"><img class="ct-ico" src="assets/icon-chart.png">数据汇总</div>
+            <div class="grid-2">
+              <div class="stat-box"><div class="num">{{ adminStats.current.overview.total_used }}</div><div class="label">已用号码</div></div>
+              <div class="stat-box"><div class="num" style="color:#67C23A">{{ adminStats.current.overview.connected }}</div><div class="label">已接通</div></div>
+              <div class="stat-box"><div class="num" style="color:#F56C6C">{{ adminStats.current.overview.unconnected }}</div><div class="label">未接通</div></div>
+              <div class="stat-box"><div class="num" style="color:#9B7EDE">{{ adminStats.current.overview.wechat_added }}</div><div class="label">加微信</div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title"><img class="ct-ico" src="assets/icon-users.png">人员明细</div>
+            <div v-if="!adminStats.current.details.length" class="empty" style="padding:30px"><img class="empty-ico" src="assets/empty-state.png">暂无数据</div>
+            <div v-else>
+              <div v-for="d in adminStats.current.details" :key="d.user_id" class="list-item">
+                <div class="left">
+                  <div class="name">{{ d.real_name }}</div>
+                  <div class="desc">已用 {{ d.total_used }} · 接通 {{ d.connected }} · 微信 {{ d.wechat_added }}</div>
+                </div>
+                <div class="progress-bar" style="width:80px">
+                  <div class="fill" :style="{width: Math.min(100, d.connected*10) + '%'}"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 底部导航 -->
+      <div class="tab-bar">
+        <div class="tab" :class="{active: adminTab==='home'}" @click="adminTab='home'">
+          <img class="nav-ico" src="assets/tab-home-active.png">首页
+        </div>
+        <div class="tab" :class="{active: adminTab==='pool'}" @click="adminTab='pool'">
+          <img class="nav-ico" src="assets/icon-pool.png">号码池
+        </div>
+        <div class="tab" :class="{active: adminTab==='users'}" @click="adminTab='users'">
+          <img class="nav-ico" src="assets/icon-users.png">员工
+        </div>
+        <div class="tab" :class="{active: adminTab==='stats'}" @click="adminTab='stats'">
+          <img class="nav-ico" src="assets/icon-stats.png">看板
+        </div>
+        <div class="tab" @click="doLogout">
+          <img class="nav-ico" src="assets/icon-logout.png">退出
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== 邀约员界面 ========== -->
+    <div v-else>
+      <!-- 当前号码 -->
+      <div v-if="agentTab === 'current'">
+        <div class="header-bar">
+          <h1><img class="hd-ico" src="assets/icon-user.png">你好，{{ userInfo.real_name }}</h1>
+          <div class="sub">{{ today }} · 今日已用 {{ currentInfo.today_used }}/{{ currentInfo.daily_limit }}</div>
+          <div class="progress-bar">
+            <div class="fill" :style="{width: Math.min(100, (currentInfo.today_used/(currentInfo.daily_limit||1))*100) + '%'}"></div>
+          </div>
+        </div>
+        <div class="page">
+          <div v-if="!currentInfo.number" class="card">
+            <div class="empty">
+              <img class="empty-ico" src="assets/empty-state.png">
+              <div v-if="currentInfo.reason === '今日已达上限'">
+                今日已达号码上限
+                <div class="hint">明天再来吧～</div>
+              </div>
+              <div v-else-if="currentInfo.reason === '号码池已空'">
+                号码池已空
+                <div class="hint">请等待管理员补充</div>
+              </div>
+              <div v-else>{{ currentInfo.reason || '暂无号码' }}</div>
+            </div>
+          </div>
+
+          <div v-else>
+            <div class="phone-card">
+              <div class="label-top"><img class="pill-ico" src="assets/icon-call.png">待跟进号码</div>
+              <div class="number" @click="toggleShowNumber">
+                {{ showPlainNumber ? currentInfo.number.number_plain : currentInfo.number.number_masked }}
+              </div>
+              <div class="hint">点击号码可{{ showPlainNumber ? '隐藏' : '显示' }}明文</div>
+              <div class="meta">
+                <span class="pill"><img class="pill-ico" src="assets/icon-signal.png">{{ currentInfo.number.carrier }}</span>
+                <span class="pill"><img class="pill-ico" src="assets/icon-location.png">{{ currentInfo.number.region }}</span>
+              </div>
+              <div class="actions">
+                <button class="icon-btn" @click="callNumber(currentInfo.number.number_plain)" title="拨号"><img class="act-ico" style="width:26px;height:26px" src="assets/icon-call.png"></button>
+                <button class="icon-btn" @click="toggleShowNumber" title="显示/隐藏"><img class="act-ico" style="width:26px;height:26px" src="assets/icon-eye.png"></button>
+              </div>
+            </div>
+
+            <div class="btn-row" style="margin-top:16px">
+              <button class="btn" @click="openUsedForm">✅ 已使用并备注</button>
+            </div>
+            <button class="btn btn-ghost" style="margin-top:10px" @click="loadCurrent"><img class="act-ico" src="assets/icon-refresh.png">换一个号码</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 历史记录 -->
+      <div v-if="agentTab === 'history'">
+        <div class="header-bar"><h1><img class="hd-ico" src="assets/icon-record.png">历史记录</h1><div class="sub">最近 {{ historyList.length }} 条</div></div>
+        <div class="page">
+          <div v-if="!historyList.length" class="card">
+            <div class="empty"><img class="empty-ico" src="assets/empty-state.png">暂无历史记录</div>
+          </div>
+          <div v-for="r in historyList" :key="r.id" class="card record-card">
+            <div class="record-head" @click="toggleExpand(r.id)">
+              <div style="flex:1">
+                <div class="phone">
+                  {{ expandedId === r.id || revealed[r.id] ? r.number.number : maskPhone(r.number.number) }}
+                </div>
+                <div class="info">
+                  {{ r.number.carrier }} · {{ r.number.region }} · {{ formatTime(r.used_at) }}
+                </div>
+                <div class="tags">
+                  <span v-for="t in r.tags" :key="t" class="badge" :class="tagBadgeClass(t)">{{ t }}</span>
+                  <span v-if="r.is_favorite" class="badge badge-warning"><img class="act-ico" style="width:12px;height:12px" src="assets/icon-fav-filled.png">收藏</span>
+                </div>
+              </div>
+              <div class="btns">
+                <button class="mini-btn" @click.stop="callNumber(r.number.number)"><img class="mini-ico" src="assets/icon-call.png"></button>
+                <button class="mini-btn" @click.stop="toggleReveal(r.id)"><img class="mini-ico" :src="revealed[r.id] ? 'assets/icon-hide.png' : 'assets/icon-eye.png'"></button>
+              </div>
+            </div>
+            <div v-if="expandedId === r.id" class="record-expand">
+              <div class="note-label"><img class="act-ico" src="assets/icon-note.png">备注：</div>
+              <div v-if="!r.note" class="note-empty">（无备注）</div>
+              <div v-else class="note-text">{{ r.note }}</div>
+              <div class="actions">
+                <button class="btn btn-ghost" @click="toggleFavorite(r)"><img class="act-ico" src="assets/icon-fav.png">{{ r.is_favorite ? '已收藏' : '收藏' }}</button>
+                <button class="btn btn-secondary" @click="openEditRec(r)"><img class="act-ico" src="assets/icon-edit.png">编辑</button>
+                <button class="btn btn-danger" @click="deleteRecord(r)"><img class="act-ico act-ico-white" src="assets/icon-trash.png">删除</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 我的收藏 -->
+      <div v-if="agentTab === 'favorites'">
+        <div class="header-bar"><h1><img class="hd-ico" src="assets/icon-fav.png">我的收藏</h1><div class="sub">共 {{ favList.length }} 条</div></div>
+        <div class="page">
+          <div v-if="!favList.length" class="card">
+            <div class="empty"><img class="empty-ico" src="assets/empty-state.png">暂无收藏<div class="hint">在历史记录里点 ☆ 即可收藏</div></div>
+          </div>
+          <div v-for="r in favList" :key="r.id" class="card record-card">
+            <div class="record-head">
+              <div style="flex:1">
+                <div class="phone">
+                  {{ revealed[r.id] ? r.number.number : maskPhone(r.number.number) }}
+                </div>
+                <div class="info">
+                  {{ r.number.carrier }} · {{ r.number.region }} · {{ formatTime(r.used_at) }}
+                </div>
+                <div class="tags">
+                  <span v-for="t in r.tags" :key="t" class="badge" :class="tagBadgeClass(t)">{{ t }}</span>
+                </div>
+                <div v-if="r.note" style="margin-top:8px; font-size:13px; color:var(--text-sub); padding:6px 10px; background:#FAFAFC; border-radius:8px">{{ r.note }}</div>
+              </div>
+              <div class="btns">
+                <button class="mini-btn" @click="callNumber(r.number.number)"><img class="mini-ico" src="assets/icon-call.png"></button>
+                <button class="mini-btn" @click="toggleReveal(r.id)"><img class="mini-ico" :src="revealed[r.id] ? 'assets/icon-hide.png' : 'assets/icon-eye.png'"></button>
+              </div>
+            </div>
+            <div style="margin-top:10px">
+              <button class="btn btn-ghost" style="padding:8px; font-size:12px" @click="toggleFavorite(r)"><img class="act-ico" src="assets/icon-fav-filled.png">取消收藏</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-bar">
+        <div class="tab" :class="{active: agentTab==='current'}" @click="agentTab='current'">
+          <img class="nav-ico" src="assets/icon-call.png">当前号码
+        </div>
+        <div class="tab" :class="{active: agentTab==='history'}" @click="agentTab='history'; loadHistory()">
+          <img class="nav-ico" src="assets/icon-record.png">历史记录
+        </div>
+        <div class="tab" :class="{active: agentTab==='favorites'}" @click="agentTab='favorites'; loadFavorites()">
+          <img class="nav-ico" src="assets/icon-fav.png">收藏
+        </div>
+        <div class="tab" @click="doLogout">
+          <img class="nav-ico" src="assets/icon-logout.png">退出
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== 弹窗 ========== -->
+
+    <!-- 提交使用 -->
+    <div v-if="showUsedForm" class="modal-mask" @click.self="showUsedForm=false">
+      <div class="modal">
+        <div class="modal-title">✅ 标记已使用</div>
+        <div class="modal-section">
+          <div class="label">点击选择标签（可多选）</div>
+          <div>
+            <span v-for="t in allTags" :key="t.id" class="tag-chip" :class="{selected: usedForm.tags.includes(t.name)}" @click="toggleTag(t.name)">{{ t.name }}</span>
+          </div>
+        </div>
+        <div class="modal-section">
+          <div class="label"><img class="act-ico" src="assets/icon-note.png">备注详情（非必填）</div>
+          <textarea v-model="usedForm.note" placeholder="可记录沟通要点、客户意向、跟进时间等..."></textarea>
+        </div>
+        <div class="modal-section">
+          <div class="switch" :class="{on: usedForm.is_favorite}" @click="usedForm.is_favorite = !usedForm.is_favorite">
+            <div class="switch-track"></div>
+            <div class="switch-label"><img class="act-ico" src="assets/icon-fav.png">收藏此号码</div>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" @click="showUsedForm=false">取消</button>
+          <button class="btn" @click="submitUsage">完成</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 编辑记录 -->
+    <div v-if="showEditRec" class="modal-mask" @click.self="showEditRec=false">
+      <div class="modal">
+        <div class="modal-title"><img class="act-ico" src="assets/icon-edit.png">编辑记录</div>
+        <div class="modal-section">
+          <div class="label">标签（可多选）</div>
+          <div>
+            <span v-for="t in allTags" :key="t.id" class="tag-chip" :class="{selected: editForm.tags.includes(t.name)}" @click="toggleEditTag(t.name)">{{ t.name }}</span>
+          </div>
+        </div>
+        <div class="modal-section">
+          <div class="label"><img class="act-ico" src="assets/icon-note.png">备注详情</div>
+          <textarea v-model="editForm.note"></textarea>
+        </div>
+        <div class="modal-section">
+          <div class="switch" :class="{on: editForm.is_favorite}" @click="editForm.is_favorite = !editForm.is_favorite">
+            <div class="switch-track"></div>
+            <div class="switch-label"><img class="act-ico" src="assets/icon-fav.png">收藏</div>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" @click="showEditRec=false">取消</button>
+          <button class="btn" @click="saveEditRec">保存</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 新增/编辑员工 -->
+    <div v-if="showUserForm" class="modal-mask" @click.self="showUserForm=false">
+      <div class="modal">
+        <div class="modal-title">{{ editingUser ? '编辑员工' : '新增邀约员' }}</div>
+        <div class="form-row"><div class="form-label">账号</div><div class="form-input"><input v-model="userForm.username" placeholder="登录账号" :disabled="editingUser" /></div></div>
+        <div class="form-row"><div class="form-label">密码</div><div class="form-input"><input v-model="userForm.password" type="password" :placeholder="editingUser ? '留空则不修改' : '登录密码'" /></div></div>
+        <div class="form-row"><div class="form-label">姓名</div><div class="form-input"><input v-model="userForm.real_name" placeholder="真实姓名" /></div></div>
+        <div class="form-row"><div class="form-label">手机</div><div class="form-input"><input v-model="userForm.phone" placeholder="管理员手机" /></div></div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" @click="showUserForm=false">取消</button>
+          <button class="btn" @click="saveUser">保存</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 个人规则 -->
+    <div v-if="showUserRule" class="modal-mask" @click.self="showUserRule=false">
+      <div class="modal" v-if="editingRuleUser">
+        <div class="modal-title">个人规则 - {{ editingRuleUser.real_name }}</div>
+        <div style="font-size:12px; color:var(--text-sub); margin-bottom:12px;">留空表示使用全局规则</div>
+        <div class="form-row"><div class="form-label">每日上限</div><div class="form-input"><input type="number" v-model.number="userRule.daily_limit" placeholder="留空=用全局" /></div></div>
+        <div class="form-row"><div class="form-label">历史数量</div><div class="form-input"><input type="number" v-model.number="userRule.history_count" placeholder="留空=用全局" /></div></div>
+        <div class="form-row"><div class="form-label">收藏上限</div><div class="form-input"><input type="number" v-model.number="userRule.favorite_limit" placeholder="留空=用全局" /></div></div>
+        <div class="form-row"><div class="form-label">回收天数</div><div class="form-input"><input type="number" v-model.number="userRule.recycle_days" placeholder="留空=用全局" /></div></div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" @click="showUserRule=false">取消</button>
+          <button class="btn" @click="saveUserRule">保存</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div v-if="toast.show" class="toast">{{ toast.text }}</div>
+  </div>
+
+  <script>
+    const { createApp, ref, reactive, onMounted, computed, watch } = Vue;
+
+    const app = createApp({
+      setup() {
+        // ===== 基础状态 =====
+        const token = ref(localStorage.getItem('token') || '');
+        const role = ref(localStorage.getItem('role') || '');
+        const userInfo = reactive({ real_name: localStorage.getItem('real_name') || '' });
+        const today = computed(() => {
+          const d = new Date();
+          const w = ['周日','周一','周二','周三','周四','周五','周六'];
+          return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${w[d.getDay()]}`;
+        });
+
+        const loginForm = reactive({ username: '', password: '' });
+        const adminTab = ref('home');
+        const agentTab = ref('current');
+
+        // ===== Toast =====
+        const toast = reactive({ show: false, text: '' });
+        function showToast(text, duration = 2000) {
+          toast.text = text;
+          toast.show = true;
+          setTimeout(() => { toast.show = false; }, duration);
+        }
+
+        // ===== 管理员数据 =====
+        const adminStats = reactive({
+          today: { overview: { total_used:0, connected:0, unconnected:0, wechat_added:0, pool_remaining:0 }, details: [] },
+          current: { overview: { total_used:0, connected:0, unconnected:0, wechat_added:0, pool_remaining:0 }, details: [] },
+          pool: { total:0, pool_remaining:0, used:0 },
+        });
+        const statsRange = ref('today');
+        const statsRanges = [
+          { key: 'today', label: '今日' },
+          { key: 'yesterday', label: '昨日' },
+          { key: 'week', label: '本周' },
+          { key: 'month', label: '本月' },
+        ];
+        const userList = ref([]);
+        const batches = ref([]);
+        const uploadStatus = ref('');
+
+        // ===== 规则 =====
+        const globalRule = reactive({ daily_limit: 50, history_count: 5, favorite_limit: 5, recycle_days: 7 });
+        const userRule = reactive({ daily_limit: null, history_count: null, favorite_limit: null, recycle_days: null });
+        const editingRuleUser = ref(null);
+        const showUserRule = ref(false);
+
+        // ===== 员工表单 =====
+        const showUserForm = ref(false);
+        const editingUser = ref(null);
+        const userForm = reactive({ username: '', password: '', real_name: '', phone: '' });
+
+        // ===== 邀约员 =====
+        const currentInfo = reactive({ number: null, today_used: 0, daily_limit: 50, reason: '' });
+        const showPlainNumber = ref(false);
+        const historyList = ref([]);
+        const favList = ref([]);
+        const allTags = ref([]);
+        const revealed = reactive({});
+        const expandedId = ref(null);
+
+        // ===== 使用表单 =====
+        const showUsedForm = ref(false);
+        const usedForm = reactive({ tags: [], note: '', is_favorite: false });
+        const showEditRec = ref(false);
+        const editForm = reactive({ id: null, tags: [], note: '', is_favorite: false });
+
+        // ===== axios 拦截器 =====
+        axios.interceptors.request.use(cfg => {
+          if (token.value) cfg.headers.Authorization = 'Bearer ' + token.value;
+          return cfg;
+        });
+        axios.interceptors.response.use(r => r, err => {
+          if (err.response && err.response.status === 401) {
+            doLogout();
+            showToast('登录已过期');
+          } else if (err.response && err.response.data && err.response.data.detail) {
+            showToast(err.response.data.detail);
+          } else {
+            showToast('网络错误');
+          }
+          return Promise.reject(err);
+        });
+
+        // ===== 登录 =====
+        async function doLogin() {
+          if (!loginForm.username || !loginForm.password) {
+            showToast('请输入账号密码');
+            return;
+          }
+          try {
+            const r = await axios.post('/api/auth/login', loginForm);
+            token.value = r.data.access_token;
+            role.value = r.data.role;
+            userInfo.real_name = r.data.real_name;
+            localStorage.setItem('token', token.value);
+            localStorage.setItem('role', role.value);
+            localStorage.setItem('real_name', r.data.real_name);
+            showToast('登录成功');
+            initByRole();
+          } catch (e) {}
+        }
+
+        function doLogout() {
+          token.value = '';
+          role.value = '';
+          userInfo.real_name = '';
+          localStorage.removeItem('token');
+          localStorage.removeItem('role');
+          localStorage.removeItem('real_name');
+          loginForm.username = '';
+          loginForm.password = '';
+        }
+
+        // ===== 工具 =====
+        function formatTime(s) {
+          if (!s) return '';
+          const d = new Date(s);
+          const pad = n => n < 10 ? '0'+n : n;
+          return `${d.getMonth()+1}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        }
+        function maskPhone(num) {
+          if (!num || num.length !== 11) return num;
+          return num.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2');
+        }
+        function tagBadgeClass(name) {
+          const map = { '已接通':'badge-success', '未接通':'badge-danger', '已加微信':'badge-info', '已约见':'badge-warning', '已成交':'badge-success' };
+          return map[name] || 'badge-info';
+        }
+        function callNumber(num) {
+          if (!num) return;
+          window.location.href = 'tel:' + num;
+        }
+        function toggleReveal(id) {
+          // 关掉其他已显示的
+          for (const k in revealed) if (k !== String(id) && k !== id) revealed[k] = false;
+          revealed[id] = !revealed[id];
+        }
+        function toggleShowNumber() {
+          showPlainNumber.value = !showPlainNumber.value;
+        }
+        function toggleExpand(id) {
+          expandedId.value = expandedId.value === id ? null : id;
+        }
+        function toggleTag(name) {
+          const i = usedForm.tags.indexOf(name);
+          if (i >= 0) usedForm.tags.splice(i, 1);
+          else usedForm.tags.push(name);
+        }
+        function toggleEditTag(name) {
+          const i = editForm.tags.indexOf(name);
+          if (i >= 0) editForm.tags.splice(i, 1);
+          else editForm.tags.push(name);
+        }
+
+        // ===== 管理员 API =====
+        // 加载首页今日统计与号码池状态
+        async function loadAdminHome() {
+          try {
+            const r1 = await axios.get('/api/admin/stats?range=today');
+            adminStats.today = r1.data;
+            const r2 = await axios.get('/api/admin/pool/stats');
+            adminStats.pool = r2.data;
+          } catch (e) {}
+        }
+        // 按所选时间范围加载数据看板
+        async function loadStats() {
+          try {
+            const r = await axios.get('/api/admin/stats?range=' + statsRange.value);
+            adminStats.current = r.data;
+          } catch (e) {}
+        }
+        // 加载员工列表
+        async function loadUsers() {
+          try {
+            const r = await axios.get('/api/admin/users');
+            userList.value = r.data;
+          } catch (e) {}
+        }
+        // 加载导入批次记录
+        async function loadBatches() {
+          try {
+            const r = await axios.get('/api/admin/batches');
+            batches.value = r.data;
+          } catch (e) {}
+        }
+        // 加载全局规则
+        async function loadGlobalRule() {
+          try {
+            const r = await axios.get('/api/admin/rules/global');
+            Object.assign(globalRule, r.data);
+          } catch (e) {}
+        }
+        // 保存全局规则
+        async function saveGlobalRule() {
+          try {
+            await axios.put('/api/admin/rules/global', globalRule);
+            showToast('已保存');
+          } catch (e) {}
+        }
+        // 打开个人规则弹窗（预填当前个人规则）
+        async function openUserRule(u) {
+          editingRuleUser.value = u;
+          try {
+            const r = await axios.get('/api/admin/users/' + u.id + '/rule');
+            Object.assign(userRule, {
+              daily_limit: r.data.daily_limit || null,
+              history_count: r.data.history_count || null,
+              favorite_limit: r.data.favorite_limit || null,
+              recycle_days: r.data.recycle_days || null,
+            });
+            showUserRule.value = true;
+          } catch (e) {}
+        }
+        // 保存个人规则
+        async function saveUserRule() {
+          try {
+            await axios.put('/api/admin/users/' + editingRuleUser.value.id + '/rule', userRule);
+            showToast('已保存');
+            showUserRule.value = false;
+          } catch (e) {}
+        }
+        // 打开新增员工弹窗（清空表单）
+        function openAddUser() {
+          editingUser.value = null;
+          userForm.username = '';
+          userForm.password = '';
+          userForm.real_name = '';
+          userForm.phone = '';
+          showUserForm.value = true;
+        }
+        // 打开编辑员工弹窗（预填原值）
+        function openEditUser(u) {
+          editingUser.value = u;
+          userForm.username = u.username;
+          userForm.password = '';
+          userForm.real_name = u.real_name;
+          userForm.phone = u.phone || '';
+          showUserForm.value = true;
+        }
+        // 保存员工（区分新增 / 编辑）
+        async function saveUser() {
+          if (editingUser.value) {
+            // 编辑
+            try {
+              const data = { real_name: userForm.real_name, phone: userForm.phone };
+              if (userForm.password) data.password = userForm.password;
+              await axios.put('/api/admin/users/' + editingUser.value.id, data);
+              showToast('已保存');
+              showUserForm.value = false;
+              loadUsers();
+            } catch (e) {}
+          } else {
+            // 新增
+            if (!userForm.username || !userForm.password || !userForm.real_name) {
+              showToast('请填写账号、密码、姓名');
+              return;
+            }
+            try {
+              await axios.post('/api/admin/users', userForm);
+              showToast('已添加');
+              showUserForm.value = false;
+              loadUsers();
+            } catch (e) {}
+          }
+        }
+        // 启用 / 停用员工
+        async function toggleUser(u) {
+          try {
+            await axios.put('/api/admin/users/' + u.id, { is_active: !u.is_active });
+            showToast(u.is_active ? '已停职' : '已启用');
+            loadUsers();
+          } catch (e) {}
+        }
+        // 删除导入批次（二次确认）
+        async function deleteBatch(id) {
+          if (!confirm('确定删除该导入记录？')) return;
+          try {
+            await axios.delete('/api/admin/batches/' + id);
+            showToast('已删除');
+            loadBatches();
+            loadAdminHome();
+          } catch (e) {}
+        }
+        // 下载号码导入模板（CSV，带 UTF-8 BOM 以便 Excel 识别中文）
+        function downloadTemplate() {
+          // 直接给个 CSV 模板更简单，让用户用 Excel 打开
+          const csv = '手机号\n13800138000\n13900139000\n13700137000';
+          const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = '号码导入模板.csv';
+          a.click();
+          showToast('已下载模板（用 Excel 打开编辑）');
+        }
+        // 选择 Excel 文件后上传导入号码池
+        async function onFileChange(e) {
+          const f = e.target.files[0];
+          if (!f) return;
+          uploadStatus.value = '上传中...';
+          const fd = new FormData();
+          fd.append('file', f);
+          try {
+            const r = await axios.post('/api/admin/numbers/import?add_to_pool=true', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+            uploadStatus.value = `✅ 导入完成：成功 ${r.data.success}，失败 ${r.data.failed}`;
+            loadBatches();
+            loadAdminHome();
+          } catch (e) {
+            uploadStatus.value = '❌ 导入失败，请重试';
+          }
+          e.target.value = '';
+        }
+
+        // ===== 邀约员 API =====
+        async function loadCurrent() {
+          try {
+            const r = await axios.get('/api/agent/current');
+            currentInfo.number = r.data.number;
+            currentInfo.today_used = r.data.today_used;
+            currentInfo.daily_limit = r.data.daily_limit;
+            currentInfo.reason = r.data.reason || '';
+            showPlainNumber.value = false;
+          } catch (e) {}
+        }
+        async function loadTags() {
+          try {
+            const r = await axios.get('/api/agent/tags');
+            allTags.value = r.data;
+          } catch (e) {}
+        }
+        async function loadHistory() {
+          try {
+            const r = await axios.get('/api/agent/history');
+            historyList.value = r.data;
+          } catch (e) {}
+        }
+        async function loadFavorites() {
+          try {
+            const r = await axios.get('/api/agent/favorites');
+            favList.value = r.data;
+          } catch (e) {}
+        }
+        function openUsedForm() {
+          usedForm.tags = [];
+          usedForm.note = '';
+          usedForm.is_favorite = false;
+          showUsedForm.value = true;
+        }
+        async function submitUsage() {
+          if (!currentInfo.number) return;
+          try {
+            await axios.post('/api/agent/usage', {
+              number_id: currentInfo.number.id,
+              tags: usedForm.tags,
+              note: usedForm.note,
+              is_favorite: usedForm.is_favorite,
+            });
+            showToast('✅ 已记录');
+            showUsedForm.value = false;
+            loadCurrent();
+          } catch (e) {}
+        }
+        async function toggleFavorite(r) {
+          try {
+            await axios.put('/api/agent/usage/' + r.id, { is_favorite: !r.is_favorite });
+            showToast(r.is_favorite ? '已取消收藏' : '已收藏 ⭐');
+            loadHistory();
+            loadFavorites();
+            loadCurrent();
+          } catch (e) {}
+        }
+        function openEditRec(r) {
+          editForm.id = r.id;
+          editForm.tags = [...r.tags];
+          editForm.note = r.note;
+          editForm.is_favorite = r.is_favorite;
+          showEditRec.value = true;
+        }
+        async function saveEditRec() {
+          try {
+            await axios.put('/api/agent/usage/' + editForm.id, {
+              tags: editForm.tags,
+              note: editForm.note,
+              is_favorite: editForm.is_favorite,
+            });
+            showToast('已保存');
+            showEditRec.value = false;
+            loadHistory();
+            loadFavorites();
+          } catch (e) {}
+        }
+        async function deleteRecord(r) {
+          if (!confirm('确定删除该记录？删除后号码将回到号码池。')) return;
+          try {
+            await axios.delete('/api/agent/usage/' + r.id);
+            showToast('已删除');
+            loadHistory();
+            loadCurrent();
+          } catch (e) {}
+        }
+
+        // ===== 初始化 =====
+        async function initByRole() {
+          if (role.value === 'admin') {
+            // 并发加载，失败一个不拖累其他的
+            Promise.allSettled([
+              loadAdminHome(),
+              loadUsers(),
+              loadGlobalRule(),
+            ]).then(results => {
+              // 如果第一个请求（loadAdminHome）返回 401，axios 拦截器会自动 doLogout + showToast
+              // 这里不需要额外处理
+            });
+          } else {
+            Promise.allSettled([loadCurrent(), loadTags()]);
+          }
+        }
+
+        // 启动时验证 token 是否有效
+        async function verifyToken() {
+          if (!token.value) return;
+          try {
+            // 用 /me 接口验证 token
+            const r = await axios.get('/api/auth/me');
+            userInfo.real_name = r.data.real_name;
+            localStorage.setItem('real_name', r.data.real_name);
+            initByRole();
+          } catch (e) {
+            // token 失效，清掉
+            doLogout();
+          }
+        }
+
+        watch(adminTab, (v) => {
+          if (v === 'home') loadAdminHome();
+          if (v === 'pool') { loadBatches(); loadAdminHome(); }
+          if (v === 'users') loadUsers();
+          if (v === 'rules') { loadUsers(); loadGlobalRule(); }
+          if (v === 'stats') { statsRange.value = 'today'; loadStats(); }
+        });
+
+        onMounted(() => {
+          if (token.value && role.value) {
+            verifyToken();
+          }
+        });
+
+        return {
+          token, role, userInfo, today, loginForm, doLogin, doLogout,
+          adminTab, agentTab, toast,
+          adminStats, userList, batches, uploadStatus, statsRange, statsRanges,
+          globalRule, userRule, editingRuleUser, showUserRule, saveGlobalRule, openUserRule, saveUserRule,
+          showUserForm, editingUser, userForm, openAddUser, openEditUser, saveUser, toggleUser,
+          deleteBatch, downloadTemplate, onFileChange,
+          currentInfo, showPlainNumber, callNumber, toggleShowNumber,
+          historyList, favList, allTags, revealed, expandedId, toggleReveal, toggleExpand,
+          formatTime, maskPhone, tagBadgeClass,
+          showUsedForm, usedForm, openUsedForm, submitUsage, toggleTag,
+          showEditRec, editForm, openEditRec, saveEditRec, toggleEditTag,
+          toggleFavorite, deleteRecord, loadCurrent, loadHistory, loadFavorites,
+        };
+      }
+    });
+
+    app.mount('#app');
+  </script>
+</body>
+</html>

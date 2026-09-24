@@ -1,0 +1,87 @@
+/* ============================================================
+   个人规则设置页样式
+
+   📏 可调参数（在 page 节点下调整，作用于本页所有 .form-input）
+   --input-padding-y: 数字距输入框上、下边框的距离（垂直呼吸空间）
+   --input-padding-x: 数字距输入框左、右边框的距离（水平呼吸空间）
+   --input-min-height: 输入框最小高度（控制输入框整体高度）
+   ============================================================ */
+page {
+  --input-padding-y: 22rpx;
+  --input-padding-x: 28rpx;
+  --input-min-height: 80rpx;
+}
+.page { padding-bottom: 40rpx; }
+.user-header {
+  background: linear-gradient(135deg, #5B8FF9, #8FB6FF);
+  color: #fff;
+  padding: 36rpx 32rpx 32rpx;
+  text-align: center;
+}
+.user-avatar {
+  width: 120rpx; height: 120rpx;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.25);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 48rpx; font-weight: 700;
+  margin: 0 auto 16rpx;
+}
+.user-name { font-size: 32rpx; font-weight: 600; }
+.user-tip { font-size: 22rpx; opacity: 0.85; margin-top: 8rpx; }
+
+.card { background: #fff; margin: 20rpx 24rpx; border-radius: 16rpx; padding: 36rpx 24rpx 36rpx; }
+.form-row {
+  display: flex;               /* 横向布局：label 左 + input 右 */
+  align-items: center;
+  margin-bottom: 24rpx;        /* 行间距加大让 card 增高 */
+  min-height: 80rpx;           /* 行最小高度，让输入框能足够高 */
+}
+.form-label {
+  display: flex;               /* 内部 flex：label文本左 + hint右 */
+  justify-content: space-between;
+  align-items: center;
+  width: 280rpx;               /* 容纳"每日分配号码上限" + hint，略缩小让 input 更宽 */
+  margin-right: 16rpx;
+  font-size: 26rpx;
+  color: #606266;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.form-label .hint { color: #909399; font-size: 22rpx; flex-shrink: 0; }
+.form-input {
+  flex: 1;                     /* 占据 label 以外的剩余空间 */
+  background: #F5F7FA;
+  padding: var(--input-padding-y) var(--input-padding-x);  /* 上下 / 左右，由 page 变量控制 */
+  min-height: var(--input-min-height);                     /* 输入框最小高度 */
+  border-radius: 12rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #303133;
+  box-sizing: border-box;
+  text-align: right;           /* 数字右对齐 */
+  display: block;
+}
+
+.btn-save {
+  background: linear-gradient(135deg, #FF6B9D, #FF8FB1);
+  color: #fff;
+  padding: 24rpx 0;
+  border-radius: 44rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+  text-align: center;
+  margin-top: 20rpx;
+  box-shadow: 0 8rpx 20rpx rgba(255,107,157,0.25);
+}
+
+.effective-card { background: #FFF7E6; border: 1rpx solid #FFE4B5; }
+.eff-title { font-size: 28rpx; font-weight: 600; color: #E6A23C; margin-bottom: 16rpx; }
+.eff-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12rpx 0;
+  font-size: 26rpx;
+  border-bottom: 1rpx solid #FFE4B5;
+}
+.eff-row:last-child { border-bottom: none; }
+.eff-val { font-weight: 600; color: #FF6B9D; }

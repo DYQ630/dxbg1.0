@@ -1,0 +1,85 @@
+<!-- pages/admin-tags/admin-tags.wxml -->
+<!-- 标签管理：标签列表（内置/自定义）、新建/编辑/删除、颜色选择 -->
+<view class="page">
+  <!-- 顶部导航 -->
+  <view class="header-bar">
+    <view class="title"><image class="ti ti-white" src="/images/icon-tag.png" mode="aspectFit" />标签管理</view>
+  </view>
+
+  <!-- 加载中 -->
+  <view wx:if="{{loading}}" class="loading-row">
+    <text>加载中...</text>
+  </view>
+
+  <!-- 标签列表 -->
+  <view wx:if="{{!loading}}" class="card">
+    <view class="card-title">标签列表</view>
+    <view class="card-tip">共 {{tags.length}} 个（内置 {{builtinCount}} · 自定义 {{customCount}}）</view>
+
+    <view wx:if="{{tags.length === 0}}" class="empty-state">
+      <image class="empty-img" src="/images/empty-state.png" mode="aspectFit" />
+      <view class="empty-text">暂无标签</view>
+    </view>
+
+    <view wx:else class="tag-list">
+      <view
+        wx:for="{{tags}}"
+        wx:key="id"
+        class="tag-row"
+        style="border-left: 6rpx solid {{item.color}}"
+      >
+        <view class="tag-dot" style="background:{{item.color}}"></view>
+        <view class="tag-info">
+          <text class="tag-name">{{item.name}}</text>
+          <text class="tag-meta">{{item.metaText}}</text>
+        </view>
+        <view class="tag-actions">
+          <view class="act-btn" bindtap="openEdit" data-id="{{item.id}}">编辑</view>
+          <view class="act-btn danger" bindtap="onDelete" data-id="{{item.id}}">删除</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 新增标签 -->
+  <view wx:if="{{!loading}}" class="add-btn" bindtap="openCreate">+ 新增标签</view>
+</view>
+
+<!-- 编辑 / 新增弹窗 -->
+<view wx:if="{{editing}}" class="modal-mask" bindtap="closeEdit">
+  <view class="modal" catchtap="noop">
+    <view class="modal-title">{{editing.id ? '编辑标签' : '新增标签'}}</view>
+
+    <view class="form-row">
+      <view class="form-label">名称</view>
+      <input
+        class="form-input"
+        type="text"
+        placeholder="标签名称"
+        value="{{form.name}}"
+        bindinput="onFormInput"
+        data-field="name"
+        maxlength="12"
+      />
+    </view>
+
+    <view class="form-row">
+      <view class="form-label">颜色</view>
+      <view class="color-picker">
+        <view
+          wx:for="{{colorPresets}}"
+          wx:key="value"
+          class="color-swatch {{form.color === item.value ? 'selected' : ''}}"
+          style="background:{{item.value}}"
+          bindtap="onColorPick"
+          data-color="{{item.value}}"
+        ></view>
+      </view>
+    </view>
+
+    <view class="btn-row">
+      <view class="btn btn-secondary" bindtap="closeEdit">取消</view>
+      <view class="btn btn-primary" bindtap="saveTag">保存</view>
+    </view>
+  </view>
+</view>

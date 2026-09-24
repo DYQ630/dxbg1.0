@@ -1,0 +1,81 @@
+/* ============================================================
+   导入批次号码明细
+   ============================================================ */
+
+/* 导入时间 */
+.batch-time {
+  font-size: 22rpx;
+  color: var(--text-sub);
+  margin-top: 20rpx;
+}
+
+/* 号码数量提示 */
+.num-count {
+  font-size: 24rpx;
+  color: var(--text-sub);
+  margin-bottom: 16rpx;
+  padding-left: 8rpx;
+}
+
+/* 列表滚动区 */
+.list-scroll {
+  height: calc(100vh - 420rpx);
+}
+
+/* 号码行 */
+.num-row {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 28rpx;
+  margin-bottom: 16rpx;
+}
+.num-row:active { opacity: 0.85; }
+.num-row .idx {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 16rpx;
+  background: #FFF0F5;
+  color: var(--primary);
+  font-size: 26rpx;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 20rpx;
+  flex-shrink: 0;
+}
+.num-row .phone {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: var(--text);
+  font-family: "SF Mono", Consolas, monospace;
+  letter-spacing: 1rpx;
+}
+.num-row .info {
+  font-size: 22rpx;
+  color: var(--text-sub);
+  margin-top: 6rpx;
+}
+
+/* 状态标签 */
+.num-row .status {
+  flex-shrink: 0;
+  font-size: 22rpx;
+  border-radius: 20rpx;
+  padding: 8rpx 18rpx;
+  margin-left: 16rpx;
+}
+.s-available { background: #E1F3D8; color: var(--success); }
+.s-assigned  { background: #E8F0FE; color: var(--info); }
+.s-used      { background: #FAECD8; color: var(--warning); }
+.s-favorite  { background: #F0E6FF; color: var(--secondary); }
+.s-recycled  { background: #FDE2E2; color: var(--danger); }
+.s-unknown   { background: #EEEFF3; color: var(--text-sub); }
+
+/* 空状态标题 */
+.empty-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8rpx;
+}

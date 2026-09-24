@@ -1,0 +1,65 @@
+{
+  "requiredBackgroundModes": [],
+  "requiredPrivateInfos": [],
+  "pages": [
+    "pages/login/login",
+    "pages/admin-home/admin-home",
+    "pages/admin-pool/admin-pool",
+    "pages/admin-recycle/admin-recycle",
+    "pages/admin-users/admin-users",
+    "pages/admin-rules/admin-rules",
+    "pages/admin-rules/admin-user-rule/admin-user-rule",
+    "pages/admin-stats/admin-stats",
+    "pages/admin-profile/admin-profile",
+    "pages/admin-tags/admin-tags",
+    "pages/agent-current/agent-current",
+    "pages/agent-history/agent-history",
+    "pages/agent-favorite/agent-favorite",
+    "pages/agent-profile/agent-profile",
+    "pages/edit-record/edit-record",
+    "pages/batch-detail/batch-detail"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#FF6B9D",
+    "navigationBarTextStyle": "white",
+    "navigationBarTitleText": "邀约宝",
+    "backgroundColor": "#FAF7FB",
+    "backgroundTextStyle": "dark",
+    "enablePullDownRefresh": false
+  },
+  "tabBar": {
+    "custom": false,
+    "color": "#8E8AA0",
+    "selectedColor": "#FF6B9D",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/admin-home/admin-home",
+        "text": "首页",
+        "iconPath": "images/tab-home.png",
+        "selectedIconPath": "images/tab-home-active.png"
+      },
+      {
+        "pagePath": "pages/admin-pool/admin-pool",
+        "text": "号码池",
+        "iconPath": "images/tab-pool.png",
+        "selectedIconPath": "images/tab-pool-active.png"
+      },
+      {
+        "pagePath": "pages/admin-recycle/admin-recycle",
+        "text": "回收池",
+        "iconPath": "images/tab-recycle.png",
+        "selectedIconPath": "images/tab-recycle-active.png"
+      },
+      {
+        "pagePath": "pages/admin-profile/admin-profile",
+        "text": "我的",
+        "iconPath": "images/tab-users.png",
+        "selectedIconPath": "images/tab-users-active.png"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

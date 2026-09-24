@@ -1,0 +1,56 @@
+# ============================================================
+# 邀约宝后端 - systemd 服务单元（Ubuntu 生产进程守护）
+# 作用：开机自启 + 崩溃自动重启 gunicorn（FastAPI 生产 ASGI 服务器）
+#
+# 部署步骤：
+#   1. 把本文件放到 /etc/systemd/system/yaoyuebao.service
+#   2. 执行：
+#      sudo systemctl daemon-reload
+#      sudo systemctl enable yaoyuebao      # 设为开机自启
+#      sudo systemctl start yaoyuebao       # 立即启动
+#   3. 常用管理：
+#      状态： sudo systemctl status yaoyuebao
+#      日志： sudo journalctl -u yaoyuebao -f
+#      重启： sudo systemctl restart yaoyuebao
+# ============================================================
+
+[Unit]
+Description=Yaoyuebao Dialer Backend (FastAPI + gunicorn)
+# 在网络就绪后再启动，避免端口/外部依赖未准备好导致启动失败
+After=network.target
+
+[Service]
+# ---- 运行身份 ----
+# 使用 www-data（与 Nginx 同用户），遵循最小权限；数据库/日志目录需对其可写
+User=www-data
+Group=www-data
+
+# ---- 工作目录 ----
+# 后端代码根目录（与 setup_ubuntu.sh 安装路径一致）
+WorkingDirectory=/var/www/yaoyuebao/dialer-backend
+
+# ---- 环境变量 ----
+# 从 .env 注入 DB_PATH / SECRET_KEY / ENV（systemd 支持以 # 开头的注释行）
+EnvironmentFile=/var/www/yaoyuebao/dialer-backend/.env
+
+# ---- 启动命令 ----
+# gunicorn 作为生产 ASGI 服务器：
+#   -w 2              ：2 个 worker 进程（轻量应用足够；也可设为 CPU核数*2-1）
+#   -k UvicornWorker  ：用 uvicorn worker 运行 ASGI（FastAPI 必需）
+#   -b 127.0.0.1:8000 ：仅监听本机回环地址，由 Nginx 反代（不直暴露公网）
+#   app.main:app      ：FastAPI 应用实例的导入路径
+ExecStart=/var/www/yaoyuebao/dialer-backend/venv/bin/gunicorn \
+    -w 2 \
+    -k uvicorn.workers.UvicornWorker \
+    -b 127.0.0.1:8000 \
+    app.main:app
+
+# ---- 进程守护策略 ----
+Restart=always            # 无论因何退出都自动重启
+RestartSec=5             # 重启前等待 5 秒，避免崩溃雪崩
+KillMode=mixed
+TimeoutStopSec=30
+
+[Install]
+# 多用户运行级别下启用（即开机自启的目标）
+WantedBy=multi-user.target

@@ -1,0 +1,47 @@
+<!-- pages/admin-rules/admin-user-rule/admin-user-rule.wxml -->
+<!-- 单个邀约员个人规则设置（留空继承全局规则） -->
+<view class="page">
+  <view class="user-header">
+    <view class="user-avatar">{{initial || '?'}}</view>
+    <view class="user-name">{{user.real_name || user.username}}</view>
+    <view class="user-tip">个人规则会覆盖全局规则</view>
+  </view>
+
+  <view class="card">
+    <view class="form-row">
+      <view class="form-label">每日分配号码上限
+        <text class="hint">全局：{{global.daily_limit}}</text>
+      </view>
+      <input class="form-input" type="number" value="{{rule.daily_limit}}" bindinput="onInput" data-field="daily_limit" placeholder="留空使用全局" />
+    </view>
+    <view class="form-row">
+      <view class="form-label">历史记录显示条数
+        <text class="hint">全局：{{global.history_count}}</text>
+      </view>
+      <input class="form-input" type="number" value="{{rule.history_count}}" bindinput="onInput" data-field="history_count" placeholder="留空使用全局" />
+    </view>
+    <view class="form-row">
+      <view class="form-label">收藏上限
+        <text class="hint">全局：{{global.favorite_limit}}</text>
+      </view>
+      <input class="form-input" type="number" value="{{rule.favorite_limit}}" bindinput="onInput" data-field="favorite_limit" placeholder="留空使用全局" />
+    </view>
+    <view class="form-row">
+      <view class="form-label">号码回收天数
+        <text class="hint">全局：{{global.recycle_days}}</text>
+      </view>
+      <input class="form-input" type="number" value="{{rule.recycle_days}}" bindinput="onInput" data-field="recycle_days" placeholder="留空使用全局" />
+    </view>
+
+    <view class="btn-save" bindtap="saveRule">保存个人规则</view>
+  </view>
+
+  <!-- 当前生效规则（合并后） -->
+  <view wx:if="{{effective}}" class="card effective-card">
+    <view class="eff-title"><image class="inl-ico" src="/images/icon-pin.png" mode="aspectFit" />当前生效</view>
+    <view class="eff-row"><text>每日上限</text><text class="eff-val">{{effective.daily_limit}}</text></view>
+    <view class="eff-row"><text>历史条数</text><text class="eff-val">{{effective.history_count}}</text></view>
+    <view class="eff-row"><text>收藏上限</text><text class="eff-val">{{effective.favorite_limit}}</text></view>
+    <view class="eff-row"><text>回收天数</text><text class="eff-val">{{effective.recycle_days}}</text></view>
+  </view>
+</view>

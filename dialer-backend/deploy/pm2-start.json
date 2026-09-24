@@ -1,0 +1,24 @@
+{
+  "name": "dialer-backend",
+  "script": "venv/Scripts/waitress-serve.exe",
+  "args": "--port=8000 --threads=6 app.main:app",
+  "cwd": "D:\\dialer",
+  "instances": 1,
+  "autorestart": true,
+  "watch": false,
+  "max_memory_restart": "500M",
+  "env": {
+    "DATABASE_URL": "sqlite:///D:/dialer/data/dialer.db",
+    "SECRET_KEY": "change_me_to_random_secret_key",
+    "LOG_DIR": "D:/dialer/logs",
+    "ENV": "production",
+    "PYTHONPATH": "D:\\dialer"
+  },
+  "log_file": "D:\\dialer\\logs\\pm2.log",
+  "out_file": "D:\\dialer\\logs\\pm2-out.log",
+  "err_file": "D:\\dialer\\logs\\pm2-error.log",
+  "time": true,
+  "restart_delay": 4000,
+  "max_restarts": 10,
+  "min_uptime": "10s"
+}

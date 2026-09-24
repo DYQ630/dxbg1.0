@@ -1,0 +1,89 @@
+<!-- pages/admin-stats/admin-stats.wxml -->
+<!-- 数据统计：按今日/本周/本月查看整体数据与人员明细 -->
+<view class="page">
+  <!-- 顶部导航 -->
+  <view class="header-bar">
+    <view class="title"><image class="ti ti-white" src="/images/icon-stats.png" mode="aspectFit" />数据统计</view>
+  </view>
+
+  <!-- 日期范围 Tab -->
+  <view class="range-tabs">
+    <view
+      wx:for="{{ranges}}"
+      wx:key="key"
+      class="range-tab {{range === item.key ? 'active' : ''}}"
+      data-key="{{item.key}}"
+      bindtap="onTabChange"
+    >{{item.label}}</view>
+  </view>
+
+  <!-- 加载中 -->
+  <view wx:if="{{loading}}" class="loading-row">
+    <text>加载中...</text>
+  </view>
+
+  <!-- 4格大数字 -->
+  <view wx:elif="{{stats}}" class="stat-grid">
+    <view class="stat-card big">
+      <view class="stat-num">{{stats.overview.total_used || 0}}</view>
+      <view class="stat-label">总使用</view>
+    </view>
+    <view class="stat-card big">
+      <view class="stat-num green">{{stats.overview.connected || 0}}</view>
+      <view class="stat-label">已接通</view>
+    </view>
+    <view class="stat-card big">
+      <view class="stat-num red">{{stats.overview.unconnected || 0}}</view>
+      <view class="stat-label">未接通</view>
+    </view>
+    <view class="stat-card big">
+      <view class="stat-num blue">{{stats.overview.wechat_added || 0}}</view>
+      <view class="stat-label">已加微信</view>
+    </view>
+  </view>
+
+  <!-- 号码池剩余 -->
+  <view wx:if="{{stats}}" class="pool-hint">
+    <text>号码池剩余 </text>
+    <text class="pool-num">{{stats.overview.pool_remaining || 0}}</text>
+    <text> 个</text>
+  </view>
+
+  <!-- 人员明细 -->
+  <view class="card" wx:if="{{stats}}">
+    <view class="card-title"><image class="ti" src="/images/icon-users.png" mode="aspectFit" />人员明细</view>
+
+    <view wx:if="{{!stats.details || !stats.details.length}}" class="empty-state" style="padding:40rpx">
+      <image class="empty-img" src="/images/empty-state.png" mode="aspectFit" />
+      <view class="empty-text">暂无数据</view>
+    </view>
+
+    <scroll-view wx:else scroll-y class="detail-scroll">
+      <view
+        wx:for="{{stats.details}}"
+        wx:key="user_id"
+        class="detail-row"
+      >
+        <view class="detail-name">{{item.real_name || item.username}}</view>
+        <view class="detail-stats">
+          <view class="detail-stat">
+            <text class="stat-val">{{item.total_used || 0}}</text>
+            <text class="stat-lbl">使用</text>
+          </view>
+          <view class="detail-stat">
+            <text class="stat-val green">{{item.connected || 0}}</text>
+            <text class="stat-lbl">接通</text>
+          </view>
+          <view class="detail-stat">
+            <text class="stat-val red">{{item.unconnected || 0}}</text>
+            <text class="stat-lbl">未接</text>
+          </view>
+          <view class="detail-stat">
+            <text class="stat-val blue">{{item.wechat_added || 0}}</text>
+            <text class="stat-lbl">加微</text>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+</view>

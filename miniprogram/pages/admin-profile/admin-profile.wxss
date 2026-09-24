@@ -1,0 +1,172 @@
+/* ============================================================
+   管理员个人中心样式
+   ============================================================ */
+.page {
+  min-height: 100vh;
+  background: #F5F6FA;
+  padding-bottom: 40rpx;
+}
+
+/* 顶部渐变用户卡 */
+.profile-hero {
+  display: flex;
+  align-items: center;
+  padding: 36rpx 32rpx 32rpx;
+  background: linear-gradient(135deg, #FF6B9D, #FF8FB1);
+  color: #fff;
+}
+.hero-avatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48rpx;
+  font-weight: 700;
+  margin-right: 24rpx;
+  flex-shrink: 0;
+}
+.hero-info {
+  flex: 1;
+  min-width: 0;
+}
+.hero-name {
+  font-size: 36rpx;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hero-account {
+  font-size: 24rpx;
+  opacity: 0.9;
+  margin-top: 6rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hero-role {
+  display: inline-block;
+  margin-top: 12rpx;
+  padding: 4rpx 16rpx;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 16rpx;
+  font-size: 22rpx;
+}
+
+/* 菜单卡片 */
+.card {
+  background: #fff;
+  border-radius: 16rpx;
+  margin: 20rpx 24rpx;
+  overflow: hidden;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+.menu-list {
+  padding: 0 8rpx;
+}
+.menu-item {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 24rpx;
+  font-size: 30rpx;
+  color: #303133;
+}
+.item-hover {
+  background: #F5F7FA;
+}
+.menu-icon {
+  width: 40rpx;
+  height: 40rpx;
+  margin-right: 16rpx;
+  flex-shrink: 0;
+}
+.menu-text {
+  flex: 1;
+  min-width: 0;
+}
+.menu-arrow {
+  color: #C0C4CC;
+  font-size: 36rpx;
+}
+.menu-divider {
+  height: 1rpx;
+  background: #F0F0F0;
+  margin: 0 24rpx;
+}
+.menu-icon.logout,
+.menu-text.logout {
+  color: #F56C6C;
+}
+
+.safe-bottom {
+  height: 40rpx;
+}
+
+/* 修改密码弹窗 */
+.modal-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 0 48rpx;
+}
+.modal {
+  width: 100%;
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 40rpx 32rpx 36rpx;
+  box-shadow: 0 12rpx 48rpx rgba(0, 0, 0, 0.18);
+  box-sizing: border-box;
+}
+.modal-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 28rpx;
+}
+.form-row {
+  margin-bottom: 20rpx;
+}
+.form-label {
+  font-size: 24rpx;
+  color: #606266;
+  margin-bottom: 8rpx;
+}
+.form-input {
+  background: #F5F7FA;
+  padding: 16rpx 20rpx;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  width: 100%;
+  box-sizing: border-box;
+}
+.btn-row {
+  display: flex;
+  gap: 20rpx;
+  margin-top: 28rpx;
+}
+.btn {
+  flex: 1;
+  text-align: center;
+  padding: 22rpx 0;
+  border-radius: 42rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+.btn-primary {
+  background: linear-gradient(135deg, #FF6B9D, #FF8FB1);
+  color: #fff;
+}
+.btn-secondary {
+  background: #F0F0F0;
+  color: #606266;
+}

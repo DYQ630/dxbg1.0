@@ -1,0 +1,120 @@
+/* ============================================================
+   邀约员 · 收藏号码
+   ============================================================ */
+
+/* 顶部提示条 */
+.tip-bar {
+  background: #FFF0F5;
+  border: 2rpx solid #FFD0E0;
+  color: var(--primary);
+  font-size: 24rpx;
+  border-radius: 20rpx;
+  padding: 18rpx 24rpx;
+  margin-bottom: 16rpx;
+}
+
+/* 收藏统计条 */
+.count-bar {
+  font-size: 26rpx;
+  color: var(--text-sub);
+  padding: 0 8rpx 20rpx;
+}
+
+/* 列表滚动区 */
+.list-scroll {
+  height: calc(100vh - 460rpx);
+}
+
+/* 标签药丸 */
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 12rpx;
+}
+.tag-pill {
+  display: inline-flex;
+  align-items: center;
+  background: #F5F5F7;
+  border-radius: 20rpx;
+  padding: 6rpx 16rpx;
+  font-size: 22rpx;
+  color: var(--text);
+  margin: 6rpx 12rpx 0 0;
+  line-height: 1.4;
+}
+.tag-pill .tag-dot {
+  width: 14rpx;
+  height: 14rpx;
+  border-radius: 50%;
+  margin-right: 8rpx;
+  flex-shrink: 0;
+}
+
+/* 号码展示：打码 / 明文（覆盖全局 .phone 颜色） */
+.record-head .phone.number-masked {
+  color: var(--text-sub);
+  font-weight: 500;
+  letter-spacing: 2rpx;
+}
+.record-head .phone.number-revealed {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+/* 右上操作按钮容器 */
+.record-head .actions {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  flex-shrink: 0;
+}
+
+/* 取消收藏按钮（红色高亮） */
+.record-head .actions .unfav-btn {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  background: #FDE2E2;
+  color: var(--danger);
+  border: 2rpx solid #F56C6C;
+  font-size: 34rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4rpx 12rpx rgba(245, 108, 108, 0.25);
+}
+.record-head .actions .unfav-btn:active {
+  opacity: 0.8;
+}
+
+/* 中部信息区 */
+.record-body {
+  margin-top: 16rpx;
+}
+.record-body .info {
+  font-size: 24rpx;
+  color: var(--text-sub);
+}
+.record-body .remark {
+  font-size: 24rpx;
+  color: var(--text);
+  margin-top: 10rpx;
+}
+.record-body .meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  margin-top: 10rpx;
+}
+.record-body .time {
+  font-size: 22rpx;
+  color: var(--text-sub);
+}
+
+/* 空状态标题 */
+.empty-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8rpx;
+}

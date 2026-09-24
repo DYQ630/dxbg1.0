@@ -1,0 +1,35 @@
+<!-- pages/login/login.wxml -->
+<!-- 登录页：账号 + 密码表单，提交登录 -->
+<view class="login-page">
+  <!-- 顶部品牌区：图标 + 应用名 + 副标题 -->
+  <view class="login-header">
+    <image class="logo-icon" src="/images/logo.png" mode="aspectFit" />
+    <view class="app-name">邀约宝</view>
+    <view class="app-sub">电销外呼管理系统</view>
+  </view>
+
+  <!-- 登录表单 -->
+  <view class="login-form">
+    <!-- 账号输入框 -->
+    <view class="form-item">
+      <view class="form-label">账号</view>
+      <input class="form-input" value="{{username}}" bindinput="onUsernameInput" placeholder="请输入账号" placeholder-class="placeholder" />
+    </view>
+    <!-- 密码输入框（回车可触发登录） -->
+    <view class="form-item">
+      <view class="form-label">密码</view>
+      <input class="form-input" type="password" value="{{password}}" bindinput="onPasswordInput" placeholder="请输入密码" placeholder-class="placeholder" bindconfirm="onLogin" />
+    </view>
+
+    <!-- 登录按钮：加载中禁用并显示“登录中...” -->
+    <button class="login-btn" bindtap="onLogin" disabled="{{loading}}">
+      <text wx:if="{{loading}}">登录中...</text>
+      <text wx:else>登录</text>
+    </button>
+  </view>
+
+  <!-- 底部版本信息 -->
+  <view class="login-footer">
+    <text class="text-sub">邀约宝 v2.0</text>
+  </view>
+</view>

@@ -1,0 +1,391 @@
+/* ============================================================
+   管理员首页 - admin-home.wxss
+   ============================================================ */
+
+.page {
+  min-height: 100vh;
+  background: #F5F6FA;
+  padding-bottom: 40rpx;
+}
+
+/* 顶部 hero 横幅（适度收紧，避免过大） */
+.hero-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 36rpx 40rpx 30rpx;
+  background: linear-gradient(135deg, #9B7EDE, #FF6B9D);
+  border-radius: 0 0 32rpx 32rpx;
+}
+.hero-left {
+  display: flex;
+  flex-direction: column;
+}
+.hero-greeting {
+  font-size: 38rpx;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 8rpx;
+}
+.hero-date {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.8);
+}
+.hero-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+.hero-used-num {
+  font-size: 48rpx;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1;
+}
+.hero-used-label {
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.85);
+  margin-top: 8rpx;
+}
+
+/* 加载失败 */
+.error-card {
+  margin: 32rpx 24rpx;
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 40rpx 0;
+  text-align: center;
+}
+.error-icon-img {
+  width: 88rpx;
+  height: 88rpx;
+  margin: 0 auto 8rpx;
+  display: block;
+}
+.error-text {
+  font-size: 28rpx;
+  color: #606266;
+  margin: 16rpx 0;
+}
+.error-btn {
+  display: inline-block;
+  padding: 12rpx 40rpx;
+  background: #FF6B9D;
+  color: #fff;
+  font-size: 26rpx;
+  border-radius: 32rpx;
+}
+
+/* 4 统计卡 */
+.stat-row {
+  display: flex;
+  gap: 16rpx;
+  padding: 24rpx;
+}
+.stat-card {
+  flex: 1;
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 28rpx 0;
+  text-align: center;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+}
+.stat-num {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #303133;
+  line-height: 1.1;
+}
+.stat-num.green { color: #67C23A; }
+.stat-num.red { color: #F56C6C; }
+.stat-num.blue { color: #5B8FF9; }
+.stat-label {
+  font-size: 22rpx;
+  color: #909399;
+  margin-top: 8rpx;
+}
+
+/* 号码池状态条 */
+.pool-bar {
+  display: flex;
+  align-items: center;
+  margin: 0 24rpx;
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+}
+.pool-dot {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: 50%;
+  background: #67C23A;
+  margin-right: 16rpx;
+}
+.pool-text {
+  font-size: 26rpx;
+  color: #303133;
+  font-weight: 500;
+}
+.pool-total {
+  font-size: 24rpx;
+  color: #909399;
+  margin-left: 8rpx;
+}
+
+/* ============================================================
+   【入口卡片 2×2 网格】号码池/回收池/规则/标签
+   ============================================================ */
+.entry-cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 24rpx 32rpx;
+}
+
+.entry-card {
+  width: calc(50% - 12rpx);
+  margin: 12rpx 0;
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 32rpx 0;
+  text-align: center;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 176rpx;
+  box-sizing: border-box;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.entry-card-hover {
+  transform: scale(0.96);
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
+  transition: transform 0.15s ease;
+}
+
+.entry-icon-img {
+  width: 88rpx;
+  height: 88rpx;
+  display: block;
+  margin: 0 auto 16rpx;
+  border-radius: 50%;
+  box-shadow: 0 6rpx 18rpx rgba(0, 0, 0, 0.10);
+}
+
+.entry-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.entry-sub {
+  font-size: 22rpx;
+  color: #999;
+}
+
+/* ============================================================
+   区块卡片通用
+   ============================================================ */
+.card {
+  background: #fff;
+  border-radius: 16rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+}
+.section {
+  margin: 24rpx;
+  padding: 24rpx;
+}
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+.section-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #303133;
+}
+
+/* 排序行：独立一行，右对齐 */
+.sort-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20rpx;
+}
+
+/* 今日/本周 切换 tab */
+.range-tabs {
+  display: flex;
+  background: #F5F7FA;
+  border-radius: 24rpx;
+  padding: 4rpx;
+}
+.rt {
+  padding: 12rpx 32rpx;
+  min-width: 100rpx;
+  text-align: center;
+  box-sizing: border-box;
+  border-radius: 20rpx;
+  font-size: 24rpx;
+  color: #606266;
+  transition: all 0.2s;
+}
+.rt.active {
+  background: #fff;
+  color: #FF6B9D;
+  font-weight: 600;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
+}
+
+/* 排序胶囊 */
+.sort-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 10rpx 24rpx;
+  background: #fff;
+  border: 2rpx solid #67C23A;
+  border-radius: 32rpx;
+  font-size: 24rpx;
+  color: #67C23A;
+  font-weight: 600;
+  box-shadow: 0 2rpx 8rpx rgba(103, 194, 58, 0.15);
+  transition: all 0.15s ease;
+}
+.sort-pill:active {
+  transform: scale(0.95);
+  background: #F0F9EB;
+}
+
+/* 员工 grid（两列布局） */
+.emp-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin: 8rpx 0 0;
+}
+.emp-card {
+  width: calc(50% - 12rpx);
+  box-sizing: border-box;
+  margin: 12rpx 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #fff;
+  border-radius: 16rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.06);
+  padding: 24rpx 16rpx;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.emp-card-hover {
+  transform: scale(0.98);
+  background: #FAFAFA;
+  transition: transform 0.15s ease;
+}
+.emp-avatar {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 36rpx;
+  font-weight: 600;
+  margin-bottom: 12rpx;
+  flex-shrink: 0;
+}
+.emp-name {
+  font-size: 26rpx;
+  color: #303133;
+  font-weight: 500;
+  margin-bottom: 14rpx;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* 员工指标区（三栏并排） */
+.emp-metrics {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  gap: 8rpx;
+}
+.metric {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 4rpx;
+  box-sizing: border-box;
+  line-height: 1.2;
+}
+.metric:not(:first-child) {
+  border-left: 1rpx solid #F0F0F0;
+}
+
+/* 指标值标签：圆角浅色填充 + 大数字 + 小单位 */
+.metric-value-tag {
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 12rpx;
+  padding: 10rpx 0;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 2rpx;
+}
+.mvt-num {
+  font-size: 32rpx;
+  font-weight: 700;
+  line-height: 1;
+}
+.mvt-unit {
+  font-size: 18rpx;
+  opacity: 0.75;
+}
+.metric-label-tag {
+  font-size: 22rpx;
+  font-weight: 500;
+  margin-top: 12rpx;
+}
+
+/* 指标标签语义化配色（与数值一致，提升可读性） */
+.metric-label-tag.tag-dial { color: #FF6B9D; }
+.metric-label-tag.tag-wechat { color: #5B8FF9; }
+.metric-label-tag.tag-meeting { color: #E6A23C; }
+
+/* 语义化配色 */
+/* 拨打：粉系 */
+.metric-value-tag.tag-dial { background: #FFF0F3; }
+.metric-value-tag.tag-dial .mvt-num,
+.metric-value-tag.tag-dial .mvt-unit { color: #FF6B9D; }
+/* 加微：蓝系 */
+.metric-value-tag.tag-wechat { background: #ECF5FF; }
+.metric-value-tag.tag-wechat .mvt-num,
+.metric-value-tag.tag-wechat .mvt-unit { color: #5B8FF9; }
+/* 到店：橙系 */
+.metric-value-tag.tag-meeting { background: #FDF6EC; }
+.metric-value-tag.tag-meeting .mvt-num,
+.metric-value-tag.tag-meeting .mvt-unit { color: #E6A23C; }
+
+/* 空状态 */
+.empty-mini {
+  text-align: center;
+  color: #909399;
+  font-size: 24rpx;
+  padding: 40rpx 0;
+}
+
+/* 加载中 */
+.loading-row {
+  text-align: center;
+  color: #909399;
+  font-size: 24rpx;
+  padding: 24rpx 0;
+}

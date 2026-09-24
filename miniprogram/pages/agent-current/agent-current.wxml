@@ -1,0 +1,125 @@
+<!-- ============================================================
+     pages/agent-current/agent-current.wxml - 邀约员当前号码页
+     ============================================================
+     【页面功能】
+       展示今日待跟进号码，支持拨号、打码切换、标签选择、
+       备注填写，提交后自动换下一个号码。
+
+     【号码卡片字段说明】
+       numberDisplay    : 当前展示的号码（打码或明文，由 _revealedId 控制）
+       carrier          : 运营商（移动/联通/电信）
+       region           : 号码归属地
+       today_used / daily_limit : 今日已用 / 每日上限，用于进度条
+       _revealedId === numberId : 标识当前是否已点击显示明文
+
+     【标签选择区结构】
+       - scroll-view 横向滚动容纳所有标签 chip
+       - 每个 chip 颜色由 --c CSS 变量决定（JS 动态设置）
+       - _selected=true 时高亮；hasDialed=false 时所有 chip 加 locked 样式（不可点击）
+       - 业务约束：必须先点拨号才能选标签/填备注（避免漏单）
+
+     【提交按钮状态】
+       - hasAnyTagOrRemark && hasDialed → 正常可点击
+       - 缺任一条件 → btn-disabled（灰色不可点击）
+
+     【提交后流程】
+       调 api.submitUsage() → 成功后自动 loadNext() 换下一个号码
+     ============================================================ -->
+<view class="page">
+  <!-- 顶部渐变信息栏：今日用量进度 -->
+  <view class="header-bar" style="padding-top:{{safeTop}}px;">
+    <view class="title"><image class="ti ti-white" src="/images/icon-call.png" mode="aspectFit" />当前号码</view>
+    <view class="subtitle">今日已用 {{today_used}} / {{daily_limit}} 次</view>
+    <view class="progress-bar">
+      <view class="fill" style="width:{{daily_limit > 0 ? (today_used / daily_limit * 100) : 0}}%"></view>
+    </view>
+  </view>
+
+  <!-- 加载中 -->
+  <view wx:if="{{loading && !numberPlain}}" class="card">
+    <view class="empty">加载中...</view>
+  </view>
+
+  <!-- 无号码状态 -->
+  <view wx:elif="{{!numberPlain}}" class="card">
+    <view class="empty">
+      <image class="empty-img" src="/images/empty-state.png" mode="aspectFit" />
+      <view class="empty-title">暂无可用号码</view>
+      <view class="hint">当前没有待跟进号码，请稍后刷新或联系管理员</view>
+      <view class="btn-row">
+        <button class="btn btn-ghost btn-sm" bindtap="loadNext"><image class="inl-ico" src="/images/icon-refresh.png" mode="aspectFit" />刷新</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 有号码状态 -->
+  <block wx:else>
+    <view class="phone-card">
+      <view class="label-top"><image class="inl-ico inl-white" src="/images/icon-pin.png" mode="aspectFit" />待跟进号码</view>
+      <view class="number" bindtap="onTapNumber">{{numberDisplay}}</view>
+      <view class="hint">点击号码可{{_revealedId === numberId ? '隐藏' : '显示'}}明文</view>
+      <view class="meta">
+        <view class="pill"><image class="inl-ico inl-white" src="/images/icon-signal.png" mode="aspectFit" />{{carrier || '未知运营商'}}</view>
+        <view class="pill"><image class="inl-ico inl-white" src="/images/icon-location.png" mode="aspectFit" />{{region || '未知地区'}}</view>
+      </view>
+      <view class="actions">
+        <view class="icon-btn" bindtap="callNumber"><image class="icon-btn-img" src="/images/icon-call.png" mode="aspectFit" /><text>拨号</text></view>
+        <view class="icon-btn secondary" bindtap="onTapNumber"><image class="icon-btn-img" src="/images/{{_revealedId === numberId ? 'icon-hide.png' : 'icon-eye.png'}}" mode="aspectFit" /><text>{{_revealedId === numberId ? '隐藏' : '显示'}}</text></view>
+      </view>
+    </view>
+
+    <!-- 标签选择 -->
+    <view class="card">
+      <view class="card-title">选择标签
+        <text class="more">{{selectedTags.length > 0 ? '已选 '+selectedTags.length+' 个' : '未选择'}}</text>
+      </view>
+      <view wx:if="{{!hasDialed}}" class="dial-hint">📞 请先点击上方的【拨号】按钮</view>
+      <scroll-view scroll-x class="tag-scroll">
+        <view class="tag-row">
+          <view wx:for="{{tags}}" wx:key="id"
+            class="tag-chip {{item._selected ? 'selected' : ''}} {{!hasDialed ? 'locked' : ''}}"
+            style="--c: {{item.color || '#909399'}};"
+            data-tag="{{item}}"
+            bindtap="onTapTag">{{item.name}}</view>
+        </view>
+      </scroll-view>
+
+      <!-- 备注 -->
+      <view class="modal-label" style="margin-top:24rpx"><image class="inl-ico" src="/images/icon-note.png" mode="aspectFit" />备注（选填）</view>
+      <textarea
+        class="note-input {{!hasDialed ? 'locked' : ''}}"
+        placeholder="{{hasDialed ? '可记录客户需求、意向程度、跟进时间等...' : '拨号后可填写备注'}}"
+        value="{{remark}}"
+        bindinput="onRemarkInput"
+        maxlength="500"
+        auto-height="{{true}}"
+        show-confirm-bar="{{false}}"
+        disabled="{{!hasDialed}}"
+      />
+
+      <view class="btn-row btn-row-single">
+        <button class="btn {{(hasAnyTagOrRemark && hasDialed) ? '' : 'btn-disabled'}}" bindtap="onSubmit" disabled="{{submitting || !hasDialed}}">✓ 提交记录，换下一个</button>
+      </view>
+    </view>
+  </block>
+
+  <!-- 底部 Tab 栏 -->
+  <view class="agent-tab-bar">
+    <view class="agent-tab active">
+      <image class="agent-tab-icon-img" src="/images/icon-call.png" mode="aspectFit" />
+      <view>当前号码</view>
+    </view>
+    <view class="agent-tab" bindtap="goHistory">
+      <image class="agent-tab-icon-img" src="/images/icon-record.png" mode="aspectFit" />
+      <view>历史记录</view>
+    </view>
+    <view class="agent-tab" bindtap="goFavorites">
+      <image class="agent-tab-icon-img" src="/images/icon-fav.png" mode="aspectFit" />
+      <view>收藏</view>
+    </view>
+    <view class="agent-tab" bindtap="goProfile">
+      <image class="agent-tab-icon-img" src="/images/icon-user.png" mode="aspectFit" />
+      <view>我的</view>
+    </view>
+  </view>
+</view>

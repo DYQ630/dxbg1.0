@@ -1,0 +1,84 @@
+/* ============================================================
+   跟进记录编辑
+   ============================================================ */
+
+/* 号码信息卡片 */
+.num-info {
+  text-align: center;
+}
+.num-info .label {
+  font-size: 24rpx;
+  color: var(--text-sub);
+  letter-spacing: 2rpx;
+}
+.num-info .phone {
+  font-size: 56rpx;
+  font-weight: 700;
+  color: var(--primary);
+  font-family: "SF Mono", Consolas, monospace;
+  letter-spacing: 4rpx;
+  margin: 16rpx 0 8rpx;
+}
+.num-info .info {
+  font-size: 24rpx;
+  color: var(--text-sub);
+}
+
+/* 横向标签滚动 */
+.tag-scroll {
+  width: 100%;
+  white-space: nowrap;
+}
+.tag-row {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  padding: 8rpx 0;
+}
+.tag-row .tag-chip {
+  flex-shrink: 0;
+  margin-right: 16rpx;
+}
+
+/* 删除确认弹窗 */
+.modal-mask {
+  align-items: center;
+  justify-content: center;
+}
+.confirm-modal {
+  width: 560rpx;
+  background: #fff;
+  border-radius: 32rpx;
+  padding: 48rpx 40rpx 32rpx;
+  text-align: center;
+}
+.confirm-title {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: var(--text);
+}
+.confirm-content {
+  font-size: 26rpx;
+  color: var(--text-sub);
+  margin-top: 16rpx;
+  line-height: 1.6;
+}
+.confirm-btns {
+  display: flex;
+  gap: 20rpx;
+  margin-top: 40rpx;
+}
+.confirm-btn {
+  flex: 1;
+  height: 84rpx;
+  border-radius: 44rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30rpx;
+  background: #F5F5F7;
+  color: var(--text);
+}
+.confirm-btn.danger {
+  background: var(--danger);
+  color: #fff;
+}

@@ -1,0 +1,14 @@
+fastapi==0.110.0
+uvicorn[standard]==0.27.1
+sqlalchemy==2.0.27
+pydantic==2.6.1
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+bcrypt>=4.0,<5
+python-multipart==0.0.9
+openpyxl==3.1.2
+
+# ⚠️ 上云改造：Linux 生产环境使用 gunicorn 作为 ASGI 多进程服务器（替代开发用 uvicorn 单进程）。
+# 需配合 uvicorn.workers.UvicornWorker 启动，示例：
+#   gunicorn -w 2 -k uvicorn.workers.UvicornWorker -b 127.0.0.1:8000 app.main:app
+gunicorn==21.2.0

@@ -1,0 +1,40 @@
+{
+  "miniprogramRoot": "miniprogram/",
+  "projectname": "邀约宝",
+  "appid": "wx65b4a0dacfb23ac4",
+  "setting": {
+    "compileHotReLoad": true,
+    "urlCheck": false,
+    "es6": true,
+    "postcss": true,
+    "compileWorklet": false,
+    "minified": false,
+    "uglifyFileName": false,
+    "uploadWithSourceMap": true,
+    "enhance": false,
+    "packNpmManually": false,
+    "packNpmRelationList": [],
+    "minifyWXSS": true,
+    "minifyWXML": true,
+    "localPlugins": false,
+    "disableUseStrict": false,
+    "useCompilerPlugins": false,
+    "condition": false,
+    "swc": false,
+    "disableSWC": true,
+    "babelSetting": {
+      "ignore": [],
+      "disablePlugins": [],
+      "outputPath": ""
+    }
+  },
+  "compileType": "miniprogram",
+  "libVersion": "3.17.1",
+  "description": "邀约宝电销外呼系统 - 根目录入口，miniprogramRoot 指向 miniprogram/",
+  "simulatorPluginLibVersion": {},
+  "packOptions": {
+    "ignore": [],
+    "include": []
+  },
+  "editorSetting": {}
+}

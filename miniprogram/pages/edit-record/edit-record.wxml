@@ -1,0 +1,73 @@
+<!-- pages/edit-record/edit-record.wxml -->
+<!-- 跟进记录编辑页：修改标签/备注/是否加微信，支持删除 -->
+<view class="page">
+  <!-- 顶部渐变信息栏 -->
+  <view class="header-bar">
+    <view class="title"><image class="ti ti-white" src="/images/icon-edit.png" mode="aspectFit" />编辑记录</view>
+  </view>
+
+  <!-- 加载中 -->
+  <view wx:if="{{loading && !record}}" class="card">
+    <view class="empty">加载中...</view>
+  </view>
+
+  <block wx:elif="{{record}}">
+    <!-- 号码信息卡片 -->
+    <view class="card num-info">
+      <view class="label"><image class="inl-ico" src="/images/icon-call.png" mode="aspectFit" />跟进号码</view>
+      <view class="phone">{{record.number.number_masked || record.number.number_plain}}</view>
+      <view class="info">{{record.number.carrier}} · {{record.number.region}}</view>
+    </view>
+
+    <!-- 标签选择 -->
+    <view class="card">
+      <view class="card-title">选择标签</view>
+      <scroll-view scroll-x class="tag-scroll" enhanced show-scrollbar="{{false}}">
+        <view class="tag-row">
+          <view wx:for="{{tags}}" wx:key="id"
+            class="tag-chip {{selectedTag && selectedTag.id === item.id ? 'selected' : ''}}"
+            style="{{selectedTag && selectedTag.id === item.id ? 'background:' + item.color + ';border-color:' + item.color + ';color:#fff' : ''}}"
+            data-tag="{{item}}"
+            bindtap="onTagSelect">{{item.name}}</view>
+        </view>
+      </scroll-view>
+    </view>
+
+    <!-- 备注 -->
+    <view class="card">
+      <view class="card-title"><image class="ti" src="/images/icon-note.png" mode="aspectFit" />备注</view>
+      <textarea
+        class="note-input"
+        placeholder="填写跟进备注..."
+        value="{{form.remark}}"
+        bindinput="onRemarkInput"
+        maxlength="500"
+        auto-height="{{true}}"
+        show-confirm-bar="{{false}}"
+      />
+    </view>
+
+    <!-- 已加微信 -->
+    <view class="card flex-between">
+      <view class="switch-label"><image class="inl-ico" src="/images/icon-wechat.png" mode="aspectFit" />已加微信</view>
+      <switch checked="{{form.wechat_added}}" bindchange="onWechatChange" color="#FF6B9D" />
+    </view>
+
+    <view class="btn-row">
+      <button class="btn btn-secondary" bindtap="onDelete">删除</button>
+      <button class="btn" bindtap="onSave" loading="{{loading}}">保存</button>
+    </view>
+  </block>
+
+  <!-- 删除二次确认弹窗 -->
+  <view wx:if="{{showDeleteConfirm}}" class="modal-mask">
+    <view class="confirm-modal">
+      <view class="confirm-title">删除记录</view>
+      <view class="confirm-content">删除后该号码将回到号码池，确定删除吗？</view>
+      <view class="confirm-btns">
+        <view class="confirm-btn" bindtap="closeDeleteConfirm">取消</view>
+        <view class="confirm-btn danger" bindtap="confirmDelete">删除</view>
+      </view>
+    </view>
+  </view>
+</view>

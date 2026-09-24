@@ -1,0 +1,88 @@
+<!-- pages/agent-favorite/agent-favorite.wxml -->
+<!-- 邀约员 · 收藏号码页：收藏列表（号码点击切明文、复制、取消收藏），底部自定义 Tab -->
+<view class="page">
+  <!-- 顶部渐变信息栏 -->
+  <view class="header-bar">
+    <view class="title"><image class="ti ti-white" src="/images/icon-fav.png" mode="aspectFit" />收藏号码</view>
+  </view>
+
+  <!-- 顶部提示 -->
+  <view class="tip-bar"><image class="inl-ico" src="/images/icon-tip.png" mode="aspectFit" />点击号码可切换明文/打码；取消收藏后号码将回到回收池</view>
+
+  <!-- 收藏统计：N = 当前列表长度 -->
+  <view class="count-bar">共 {{favorites.length}} 条收藏</view>
+
+  <!-- 加载中 -->
+  <view wx:if="{{loading && favorites.length === 0}}" class="card">
+    <view class="empty">加载中...</view>
+  </view>
+
+  <!-- 收藏列表 -->
+  <block wx:elif="{{favorites.length > 0}}">
+    <scroll-view scroll-y class="list-scroll" enhanced show-scrollbar="{{false}}">
+      <view wx:for="{{favorites}}" wx:key="id" wx:for-item="item" class="card record-card">
+        <!-- 头部：左侧号码（可切换明文）+ 右上操作 -->
+        <view class="record-head">
+          <view class="flex-1">
+            <view class="phone {{_revealedId === item.id ? 'number-revealed' : 'number-masked'}}"
+                  bindtap="onTapNumber" data-id="{{item.id}}" data-plain="{{item.numberPlain}}">
+              {{item.numberDisplay}}
+            </view>
+          </view>
+          <view class="actions">
+            <view class="mini-btn" bindtap="onCall" data-number="{{item.numberPlain}}"><image class="mini-btn-img" src="/images/icon-call.png" mode="aspectFit" /></view>
+            <view class="unfav-btn" bindtap="onTapUnfavorite" data-number-id="{{item.number_id}}"><image class="mini-btn-img" src="/images/icon-fav-filled.png" mode="aspectFit" /></view>
+          </view>
+        </view>
+
+        <!-- 中部：归属 + 标签 chip + 备注 + 时间 + 客户 -->
+        <view class="record-body">
+          <view class="info">归属：{{item.number.carrier}} · {{item.number.region}}</view>
+
+          <view class="tags" wx:if="{{item.tags.length > 0}}">
+            <view wx:for="{{item.tags}}" wx:for-item="tag" wx:key="id" class="tag-pill">
+              <view class="tag-dot" style="background:{{tag.color || '#5B8FF9'}}"></view>
+              <text>{{tag.name}}</text>
+            </view>
+          </view>
+
+          <view class="remark" wx:if="{{item.remark}}">备注：{{item.remark}}</view>
+
+          <view class="meta-row">
+            <text class="time" wx:if="{{item.customer}}">客户：{{item.customer}}</text>
+            <text class="time">收藏于 {{item.created_at}}</text>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+  </block>
+
+  <!-- 空状态 -->
+  <view wx:else class="card">
+    <view class="empty">
+      <image class="empty-img" src="/images/empty-state.png" mode="aspectFit" />
+      <view class="empty-title">暂无收藏号码</view>
+      <view class="hint">跟进号码时标记收藏，即可在这里查看</view>
+    </view>
+  </view>
+
+  <!-- 底部 Tab 栏 -->
+  <view class="agent-tab-bar">
+    <view class="agent-tab" bindtap="goCurrent">
+      <image class="agent-tab-icon-img" src="/images/icon-call.png" mode="aspectFit" />
+      <view>当前号码</view>
+    </view>
+    <view class="agent-tab" bindtap="goHistory">
+      <image class="agent-tab-icon-img" src="/images/icon-record.png" mode="aspectFit" />
+      <view>历史记录</view>
+    </view>
+    <view class="agent-tab active">
+      <image class="agent-tab-icon-img" src="/images/icon-fav.png" mode="aspectFit" />
+      <view>收藏</view>
+    </view>
+    <view class="agent-tab" bindtap="goProfile">
+      <image class="agent-tab-icon-img" src="/images/icon-user.png" mode="aspectFit" />
+      <view>我的</view>
+    </view>
+  </view>
+</view>

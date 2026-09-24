@@ -1,0 +1,130 @@
+<!-- pages/agent-history/agent-history.wxml -->
+<!-- 邀约员 · 历史记录页：跟进记录卡片列表（号码点击切明文、拨打、
+     收藏、编辑），底部自定义 Tab，含编辑弹窗 -->
+<view class="page">
+  <!-- 顶部渐变信息栏 -->
+  <view class="header-bar">
+    <view class="title"><image class="ti ti-white" src="/images/icon-record.png" mode="aspectFit" />跟进记录</view>
+    <view class="subtitle">共 {{total}} 条记录</view>
+  </view>
+
+  <!-- 加载中 -->
+  <view wx:if="{{loading && records.length === 0}}" class="card">
+    <view class="empty">加载中...</view>
+  </view>
+
+  <!-- 记录列表 -->
+  <block wx:elif="{{records.length > 0}}">
+    <scroll-view scroll-y class="list-scroll" enhanced show-scrollbar="{{false}}">
+      <view wx:for="{{records}}" wx:key="id" wx:for-item="item" class="card record-card">
+        <!-- 头部：左侧号码（点击切明文/打码） + 右上 4 个图标 -->
+        <view class="record-head">
+          <view class="number-block" bindtap="onTapNumber" data-id="{{item.id}}">
+            <view class="number {{_revealedId === item.id ? 'number-revealed' : 'number-masked'}}">
+              {{_revealedId === item.id ? item.number_plain : item.number_masked}}
+            </view>
+          </view>
+          <view class="actions">
+            <view class="icon-btn" bindtap="onTapCall" data-number="{{item.number_plain}}"><image class="icon-btn-img" src="/images/icon-call.png" mode="aspectFit" /></view>
+            <view class="icon-btn star-btn {{item.favorited ? 'starred' : ''}}" bindtap="onTapFavorite" data-id="{{item.id}}"><image class="icon-btn-img" src="/images/{{item.favorited ? 'icon-fav-filled.png' : 'icon-fav.png'}}" mode="aspectFit" /></view>
+            <view class="icon-btn" bindtap="onTapEdit" data-record="{{item}}"><image class="icon-btn-img" src="/images/icon-edit.png" mode="aspectFit" /></view>
+          </view>
+        </view>
+
+        <!-- 中部：归属 + 标签 chip + 备注 + 时间 + 客户 -->
+        <view class="record-meta">
+          <view class="info" wx:if="{{item.carrier || item.region}}">{{item.carrier}} · {{item.region}}</view>
+          <view class="tags">
+            <view wx:for="{{item.tags}}" wx:for-item="tag" wx:key="id" class="tag-pill">
+              <view class="tag-dot" style="background:{{tag.color || '#5B8FF9'}}"></view>
+              <text>{{tag.name}}</text>
+            </view>
+            <view wx:if="{{item.wechat_added}}" class="tag-pill wechat">
+              <view class="tag-dot" style="background:#5B8FF9"></view>
+              <text>已加微信</text>
+            </view>
+          </view>
+          <view class="remark">{{item.remark || '暂无备注'}}</view>
+          <view class="meta-row">
+            <view class="time"><image class="inl-ico" src="/images/icon-clock.png" mode="aspectFit" />{{item.usage_time}}</view>
+            <view wx:if="{{item.customer}}" class="customer"><image class="inl-ico" src="/images/icon-user.png" mode="aspectFit" />{{item.customer}}</view>
+          </view>
+        </view>
+      </view>
+
+      <view wx:if="{{records.length > 0}}" class="load-end">— 已经到底啦 —</view>
+    </scroll-view>
+  </block>
+
+  <!-- 空状态 -->
+  <view wx:else class="card">
+    <view class="empty">
+      <image class="empty-img" src="/images/empty-state.png" mode="aspectFit" />
+      <view class="empty-title">暂无跟进记录</view>
+      <view class="hint">去「当前号码」页跟进第一个号码吧</view>
+    </view>
+  </view>
+
+  <!-- 底部 Tab 栏 -->
+  <view class="agent-tab-bar">
+    <view class="agent-tab" bindtap="goCurrent">
+      <image class="agent-tab-icon-img" src="/images/icon-call.png" mode="aspectFit" />
+      <view>当前号码</view>
+    </view>
+    <view class="agent-tab active">
+      <image class="agent-tab-icon-img" src="/images/icon-record.png" mode="aspectFit" />
+      <view>历史记录</view>
+    </view>
+    <view class="agent-tab" bindtap="goFavorites">
+      <image class="agent-tab-icon-img" src="/images/icon-fav.png" mode="aspectFit" />
+      <view>收藏</view>
+    </view>
+    <view class="agent-tab" bindtap="goProfile">
+      <image class="agent-tab-icon-img" src="/images/icon-user.png" mode="aspectFit" />
+      <view>我的</view>
+    </view>
+  </view>
+
+  <!-- 编辑弹窗 -->
+  <view wx:if="{{showEditModal}}" class="modal-mask" catchtap="closeEditModal">
+    <view class="modal" catchtap="noOp">
+      <view class="modal-title"><image class="ti" src="/images/icon-edit.png" mode="aspectFit" />编辑记录</view>
+
+      <view class="modal-section">
+        <view class="modal-label">选择标签</view>
+        <scroll-view scroll-x class="tag-scroll" enhanced show-scrollbar="{{false}}">
+          <view class="tag-row">
+            <view wx:for="{{tags}}" wx:key="id"
+              class="tag-chip {{editForm.tag_id === item.id ? 'selected' : ''}}"
+              style="{{editForm.tag_id === item.id ? 'background:' + item.color + ';border-color:' + item.color + ';color:#fff' : ''}}"
+              data-tag="{{item}}"
+              bindtap="onEditTagSelect">{{item.name}}</view>
+          </view>
+        </scroll-view>
+      </view>
+
+      <view class="modal-section">
+        <view class="modal-label"><image class="inl-ico" src="/images/icon-note.png" mode="aspectFit" />备注</view>
+        <textarea
+          class="note-input"
+          placeholder="填写跟进备注..."
+          value="{{editForm.remark}}"
+          bindinput="onEditRemarkInput"
+          maxlength="500"
+          auto-height="{{true}}"
+          show-confirm-bar="{{false}}"
+        />
+      </view>
+
+      <view class="modal-section flex-between">
+        <view class="switch-label"><image class="inl-ico" src="/images/icon-wechat.png" mode="aspectFit" />已加微信</view>
+        <switch checked="{{editForm.wechat_added}}" bindchange="onEditWechatChange" color="#FF6B9D" />
+      </view>
+
+      <view class="btn-row">
+        <button class="btn btn-secondary" bindtap="closeEditModal">取消</button>
+        <button class="btn" bindtap="onSaveEdit">保存</button>
+      </view>
+    </view>
+  </view>
+</view>
