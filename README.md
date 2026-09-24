@@ -189,8 +189,3 @@ gunicorn -w 2 -k uvicorn.workers.UvicornWorker \
 
 > ⚠️ **生产环境务必第一时间登录后修改密码。**
 
----
-
-## 📄 License
-
-Proprietary — 成都蓝百川信息科技有限公司内部使用。
